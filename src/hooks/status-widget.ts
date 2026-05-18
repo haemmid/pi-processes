@@ -1,7 +1,7 @@
 import type {
   ExtensionAPI,
   ExtensionContext,
-} from "@mariozechner/pi-coding-agent";
+} from "@earendil-works/pi-coding-agent";
 import type { ProcessInfo } from "../constants";
 import type { ProcessManager } from "../manager";
 
@@ -59,11 +59,6 @@ export function setupStatusWidget(
   });
 
   pi.on("session_start", async (_event, ctx) => {
-    latestContext = ctx;
-    updateWidget();
-  });
-
-  pi.on("session_switch", async (_event, ctx) => {
     latestContext = ctx;
     updateWidget();
   });

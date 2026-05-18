@@ -1,9 +1,9 @@
 import type {
   Theme,
   ToolRenderResultOptions,
-} from "@mariozechner/pi-coding-agent";
-import type { Component } from "@mariozechner/pi-tui";
-import { Text, truncateToWidth } from "@mariozechner/pi-tui";
+} from "@earendil-works/pi-coding-agent";
+import type { Component } from "@earendil-works/pi-tui";
+import { Text, truncateToWidth } from "@earendil-works/pi-tui";
 
 type Tone = "muted" | "accent" | "success" | "warning" | "error" | "dim";
 

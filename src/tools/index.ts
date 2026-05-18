@@ -1,12 +1,11 @@
-import { StringEnum } from "@mariozechner/pi-ai";
 import type {
   AgentToolResult,
   ExtensionAPI,
   Theme,
   ToolRenderResultOptions,
-} from "@mariozechner/pi-coding-agent";
-import { Text } from "@mariozechner/pi-tui";
-import { type Static, Type } from "@sinclair/typebox";
+} from "@earendil-works/pi-coding-agent";
+import { Text } from "@earendil-works/pi-tui";
+import { type Static, Type } from "typebox";
 import type { ProcessesDetails } from "../constants";
 import type { ProcessManager } from "../manager";
 import { formatRuntime, hasAnsi, stripAnsi, truncateCmd } from "../utils";
@@ -14,8 +13,15 @@ import { executeAction } from "./actions";
 import { ToolBody, ToolCallHeader, ToolFooter } from "./tool-rendering";
 
 const ProcessesParams = Type.Object({
-  action: StringEnum(
-    ["start", "list", "output", "logs", "kill", "clear"] as const,
+  action: Type.Union(
+    [
+      Type.Literal("start"),
+      Type.Literal("list"),
+      Type.Literal("output"),
+      Type.Literal("logs"),
+      Type.Literal("kill"),
+      Type.Literal("clear"),
+    ],
     {
       description:
         "Action: start (run command), list (show all), output (get recent output), logs (get log file paths), kill (terminate or force-kill), clear (remove finished)",

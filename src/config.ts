@@ -6,7 +6,7 @@
 
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { getAgentDir } from "@mariozechner/pi-coding-agent";
+import { getAgentDir } from "@earendil-works/pi-coding-agent";
 
 export interface ProcessesConfig {
   output?: {
