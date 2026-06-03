@@ -48,6 +48,12 @@ const ProcessesParams = Type.Object({
         "Force-kill the process with SIGKILL for kill action. Use after a normal terminate times out, or when you need an immediate hard stop.",
     }),
   ),
+  continueAfterStart: Type.Optional(
+    Type.Boolean({
+      description:
+        "For start only. Leave unset/false when the next step is to wait for process completion; process start will end this agent turn and the extension will resume you on exit. Set true only when you have immediate, specific, non-polling work to do after starting.",
+    }),
+  ),
 });
 
 type ProcessesParamsType = Static<typeof ProcessesParams>;
@@ -62,20 +68,23 @@ Actions: start, list, output, logs, kill, clear.
 - start requires 'name' and 'command'
 - output/logs/kill require 'id' (exact process ID or exact friendly name)
 - kill supports optional 'force=true' for SIGKILL
+- start supports optional 'continueAfterStart=true' only when there is immediate non-polling work to do
 
 Important behavior:
-- After 'start', do not poll with repeated 'list', 'output', or 'logs' calls just to check whether the process is still running.
+- By default, 'start' ends the current agent turn. If the next step is waiting, call 'start' by itself and wait for the automatic process-end notification instead of calling 'list', 'output', or 'logs' repeatedly.
+- Set 'continueAfterStart=true' only when you have specific useful work to do immediately after starting the process; do not use it to poll.
 - This tool is event-driven: the agent is notified automatically when a process exits, fails, or is externally killed.
 - Tool-triggered kills never notify.
 - Use 'output' or 'logs' only on demand: when the user asks, when you need a one-off diagnostic snapshot, or when investigating a problem.
 
-Preferred pattern: start the process once, continue the conversation, and wait for the automatic notification instead of polling.`,
+Preferred pattern: start the process once, let the turn stop, and resume from the automatic notification instead of polling.`,
     promptSnippet:
-      "Start and manage background processes without blocking the conversation; after start, do not poll",
+      "Start and manage background processes without blocking the conversation; process start waits for notifications by default",
     promptGuidelines: [
-      "Use this instead of bash for dev servers, watch mode, log tails, port-forwards, or commands that should keep running.",
-      "After start, continue working. Do not loop on list/output/logs to wait for completion; rely on the automatic notification.",
-      "Use output or logs only for a one-off inspection, explicit user request, or debugging.",
+      "Use the process tool instead of bash for dev servers, watch mode, log tails, port-forwards, or commands that should keep running.",
+      "After process start, do not call process list/output/logs just to wait. If the next step is waiting, call process start by itself; by default it ends the turn and the extension will resume the agent when the process exits.",
+      "Set process continueAfterStart=true only when there is immediate, specific, non-polling work to do after start.",
+      "Use process output or process logs only for a one-off inspection, explicit user request, or debugging.",
     ],
 
     parameters: ProcessesParams,
@@ -116,6 +125,10 @@ Preferred pattern: start the process once, continue the conversation, and wait f
 
       if (args.action === "kill" && args.force) {
         optionArgs.push({ label: "force", value: "true" });
+      }
+
+      if (args.action === "start" && args.continueAfterStart) {
+        optionArgs.push({ label: "continueAfterStart", value: "true" });
       }
 
       return new ToolCallHeader(

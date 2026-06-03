@@ -1,5 +1,9 @@
 import { configLoader } from "../../config";
-import type { ExecuteResult, ResolveProcessResult } from "../../constants";
+import {
+  type ExecuteResult,
+  LIVE_STATUSES,
+  type ResolveProcessResult,
+} from "../../constants";
 import type { ProcessManager } from "../../manager";
 import { formatStatus, stripAnsi } from "../../utils";
 
@@ -94,6 +98,12 @@ export function executeOutput(
   if (output.stderr.length > 0) {
     outputParts.push("\nstderr:");
     outputParts.push(...output.stderr.map(stripAnsi));
+  }
+  if (LIVE_STATUSES.has(proc.status)) {
+    outputParts.push(
+      "",
+      "[Process is still active. This was a one-off snapshot; wait for the automatic process-end notification instead of calling process output/list/logs repeatedly.]",
+    );
   }
 
   const fullText = outputParts.join("\n");

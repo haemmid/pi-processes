@@ -36,6 +36,7 @@ pi install git:https://github.com/mjakl/pi-processes
 ```text
 process start "pnpm dev" name="backend-dev"
 process start "pnpm test --watch" name="tests"
+process start "pnpm dev" name="backend-dev" continueAfterStart=true
 process list
 process output id="backend-dev"
 process logs id="proc_1"
@@ -57,11 +58,15 @@ If multiple processes share the same name, use the process ID.
 
 Do not poll after starting a process.
 
-This tool is event-driven: the agent is notified automatically when a process exits, fails, or is externally killed. The intended pattern is:
+This tool is event-driven: the agent is notified automatically when a process exits, fails, or is externally killed. By default, `process start` ends the current agent turn so the agent actually waits for that notification instead of immediately polling. If the next step is waiting, call `process start` by itself rather than batching it with unrelated tools.
+
+The intended pattern is:
 
 1. `process start`
-2. continue the conversation or do other work
-3. wait for the automatic notification if the process ends
+2. let the turn stop and wait for the automatic notification if the process ends
+3. resume from that notification
+
+Use `continueAfterStart=true` only when the agent has immediate, specific, non-polling work to do after starting the process.
 
 Repeated `process list`, `process output`, or `process logs` calls just to see whether the process is still running are an anti-pattern.
 

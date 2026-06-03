@@ -5,6 +5,7 @@ import type { ProcessManager } from "../../manager";
 interface StartParams {
   name?: string;
   command?: string;
+  continueAfterStart?: boolean;
 }
 
 export function executeStart(
@@ -35,8 +36,12 @@ export function executeStart(
 
   try {
     const proc = manager.start(params.name, params.command, ctx.cwd);
+    const shouldContinue = params.continueAfterStart === true;
+    const nextStep = shouldContinue
+      ? "Continue with specific non-polling work now. Do not call process list/output/logs just to wait; the extension will notify you when this process ends."
+      : "This turn will stop after start so you can wait for the automatic process-end notification. Do not call process list/output/logs just to check whether it is still running.";
 
-    const message = `Started "${proc.name}" (${proc.id}, PID: ${proc.pid})\nLogs: ${proc.stdoutFile}\nContinue working. You will be notified when this process ends. Use process output only if you need to peek at intermediate logs while it runs.`;
+    const message = `Started "${proc.name}" (${proc.id}, PID: ${proc.pid})\nLogs: ${proc.stdoutFile}\n${nextStep}`;
     return {
       content: [{ type: "text", text: message }],
       details: {
@@ -45,6 +50,7 @@ export function executeStart(
         message,
         process: proc,
       },
+      terminate: !shouldContinue,
     };
   } catch (error) {
     const message =

@@ -1,4 +1,4 @@
-import type { ExecuteResult } from "../../constants";
+import { type ExecuteResult, LIVE_STATUSES } from "../../constants";
 import type { ProcessManager } from "../../manager";
 import { formatRuntime, formatStatus, truncateCmd } from "../../utils";
 
@@ -24,7 +24,13 @@ export function executeList(manager: ProcessManager): ExecuteResult {
     )
     .join("\n");
 
-  const message = `${processes.length} process(es):\n${summary}`;
+  const hasLiveProcess = processes.some((process) =>
+    LIVE_STATUSES.has(process.status),
+  );
+  const waitNotice = hasLiveProcess
+    ? "\n\nActive processes notify automatically on exit. Do not call process list/output/logs repeatedly just to wait."
+    : "";
+  const message = `${processes.length} process(es):\n${summary}${waitNotice}`;
   return {
     content: [{ type: "text", text: message }],
     details: {

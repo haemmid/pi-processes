@@ -329,7 +329,11 @@ export class ProcessManager {
 
   async kill(
     id: string,
-    opts?: { signal?: NodeJS.Signals; timeoutMs?: number },
+    opts?: {
+      signal?: NodeJS.Signals;
+      timeoutMs?: number;
+      notifyOnEnd?: boolean;
+    },
   ): Promise<KillResult> {
     const managed = this.processes.get(id);
     if (!managed) {
@@ -356,7 +360,7 @@ export class ProcessManager {
     const signal = opts?.signal ?? "SIGTERM";
     const timeoutMs = opts?.timeoutMs ?? 3000;
 
-    managed.triggerAgentTurnOnEnd = false;
+    managed.triggerAgentTurnOnEnd = opts?.notifyOnEnd === true;
 
     if (!LIVE_STATUSES.has(managed.status)) {
       return { ok: true, info: this.toProcessInfo(managed) };

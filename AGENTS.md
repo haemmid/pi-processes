@@ -12,7 +12,7 @@ During UI tests that require processes to be running, either give the user a pro
 
 The `process` tool is event-driven. After `process start`, do not poll with repeated `process list`, `process output`, or `process logs` calls just to check whether a process is still running or has exited.
 
-Instead, start the process once, continue working, and rely on the automatic notification sent when the process exits, fails, or is externally killed. Use `output`/`logs` only for explicit inspection, debugging, or a one-off diagnostic snapshot.
+Instead, start the process once and rely on the automatic notification sent when the process exits, fails, or is externally killed. If the next step is waiting, call `process start` by itself; it ends the agent turn by default so the notification becomes the next step. Set `continueAfterStart=true` only when there is immediate, specific, non-polling work to do. Use `output`/`logs` only for explicit inspection, debugging, or a one-off diagnostic snapshot.
 
 ## Stack
 

@@ -1,7 +1,7 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { MESSAGE_TYPE_PROCESS_UPDATE, type ProcessInfo } from "../constants";
 import type { ProcessManager } from "../manager";
-import { formatRuntime } from "../utils";
+import { formatRuntime, stripAnsi, truncateCmd } from "../utils";
 
 interface ProcessUpdateDetails {
   processId: string;
@@ -17,24 +17,26 @@ export function setupProcessEndHook(pi: ExtensionAPI, manager: ProcessManager) {
   manager.onEvent((event) => {
     if (event.type !== "process_ended") return;
 
+    // Tool-initiated kills already return a tool result. Do not enqueue a
+    // custom message while the agent is streaming; even triggerTurn=false would
+    // otherwise be delivered as steering by Pi.
+    if (!event.triggerAgentTurn) return;
+
     const info: ProcessInfo = event.info;
-
-    // The process tool always notifies the agent when a process ends, except
-    // when the end was caused by a tool-triggered kill.
-    const triggerAgentTurn = event.triggerAgentTurn;
-
     const runtime = formatRuntime(info.startTime, info.endTime);
 
     // Build message
-    let message: string;
+    let summary: string;
 
     if (info.status === "killed") {
-      message = `Process '${info.name}' was terminated (${runtime})`;
+      summary = `Process "${info.name}" (${info.id}) was terminated after ${runtime}.`;
     } else if (info.success) {
-      message = `Process '${info.name}' completed successfully (${runtime})`;
+      summary = `Process "${info.name}" (${info.id}) completed successfully after ${runtime}.`;
     } else {
-      message = `Process '${info.name}' crashed with exit code ${info.exitCode ?? "?"} (${runtime})`;
+      summary = `Process "${info.name}" (${info.id}) crashed with exit code ${info.exitCode ?? "?"} after ${runtime}.`;
     }
+
+    const message = buildAgentMessage(summary, info, manager);
 
     // Send the message to the conversation - displayed via custom renderer in UI.
     const details: ProcessUpdateDetails = {
@@ -54,7 +56,31 @@ export function setupProcessEndHook(pi: ExtensionAPI, manager: ProcessManager) {
         display: true,
         details,
       },
-      { triggerTurn: triggerAgentTurn },
+      { triggerTurn: true, deliverAs: "steer" },
     );
   });
+}
+
+function buildAgentMessage(
+  summary: string,
+  info: ProcessInfo,
+  manager: ProcessManager,
+): string {
+  const lines = [summary, `Command: ${truncateCmd(info.command, 160)}`];
+
+  const recentOutput = manager.getCombinedOutput(info.id, 20) ?? [];
+  if (recentOutput.length > 0) {
+    lines.push("", "Recent output:");
+    for (const line of recentOutput) {
+      const prefix = line.type === "stderr" ? "stderr" : "stdout";
+      lines.push(`${prefix}: ${truncateCmd(stripAnsi(line.text), 500)}`);
+    }
+  }
+
+  lines.push(
+    "",
+    "This is the automatic process-end notification. Do not call process list/output/logs just to check whether it finished; use process output once only if you need more logs for debugging.",
+  );
+
+  return lines.join("\n");
 }

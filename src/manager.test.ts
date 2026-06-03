@@ -132,6 +132,37 @@ describe("ProcessManager", () => {
     });
   });
 
+  it("can notify the agent after a user-initiated kill", async () => {
+    const proc = manager.start("server", "pnpm dev", process.cwd());
+    const endedEvents: ManagerEvent[] = [];
+    const unsubscribe = manager.onEvent((event) => {
+      if (event.type === "process_ended") {
+        endedEvents.push(event);
+      }
+    });
+
+    mocks.isProcessGroupAlive.mockReturnValue(false);
+
+    const killPromise = manager.kill(proc.id, {
+      signal: "SIGTERM",
+      timeoutMs: 3000,
+      notifyOnEnd: true,
+    });
+
+    await vi.advanceTimersByTimeAsync(3000);
+    const result = await killPromise;
+
+    unsubscribe();
+
+    expect(result.ok).toBe(true);
+    expect(endedEvents).toHaveLength(1);
+    expect(endedEvents[0]).toMatchObject({
+      type: "process_ended",
+      triggerAgentTurn: true,
+      info: { id: proc.id, status: "killed" },
+    });
+  });
+
   it("resolves only exact ids or exact names and reports ambiguity", () => {
     const first = manager.start("server", "pnpm dev", process.cwd());
     manager.start("server", "pnpm test --watch", process.cwd());

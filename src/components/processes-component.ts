@@ -132,7 +132,11 @@ export class ProcessesComponent implements Component {
         const signal =
           process.status === "terminate_timeout" ? "SIGKILL" : "SIGTERM";
         const timeoutMs = signal === "SIGKILL" ? 200 : 3000;
-        void this.manager.kill(process.id, { signal, timeoutMs });
+        void this.manager.kill(process.id, {
+          signal,
+          timeoutMs,
+          notifyOnEnd: true,
+        });
       }
       return true;
     }
