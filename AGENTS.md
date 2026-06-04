@@ -16,11 +16,11 @@ Instead, start the process once and rely on the automatic notification sent when
 
 ## Stack
 
-- TypeScript (strict mode), pnpm 10.26.1, Biome, Changesets
+- TypeScript (strict mode), pnpm 10.26.1, Biome
 
 ## Scripts
 
-- `pnpm typecheck`, `pnpm lint`, `pnpm format`, `pnpm changeset`
+- `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm format`
 
 ## Structure
 

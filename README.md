@@ -8,7 +8,13 @@ Manage background processes from Pi without blocking the conversation.
 
 ## Installation
 
-This fork is intended to be installed from git, not npm.
+Install from npm:
+
+```bash
+pi install npm:@mjakl/pi-processes
+```
+
+For development builds, install from git:
 
 ```bash
 pi install git:https://github.com/mjakl/pi-processes
@@ -31,7 +37,11 @@ pi install git:https://github.com/mjakl/pi-processes
 
 ## Usage
 
-### Agent tool
+### Agent tool (LLM-facing)
+
+The `process` tool is for the agent. Users should ask the agent to start or inspect long-running commands, then monitor them with `/ps`.
+
+Tool-call examples:
 
 ```text
 process start "pnpm dev" name="backend-dev"
@@ -125,4 +135,3 @@ Global config lives in `~/.pi/agent/extensions/process.json`.
 
 - Log files live in a temporary directory managed by the extension.
 - Background processes are cleaned up when the session shuts down.
-- A manual `/ps` QA prompt and checklist live in `test/prompts/ps-overlay-qa.md` and `test/QA.md`.

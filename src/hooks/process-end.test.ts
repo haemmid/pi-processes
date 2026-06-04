@@ -56,7 +56,7 @@ describe("setupProcessEndHook", () => {
     const [message, options] = vi.mocked(pi.sendMessage).mock.calls[0] ?? [];
 
     expect(message).toMatchObject({
-      customType: "ad-process:update",
+      customType: "pi-processes:update",
       display: true,
       details: {
         processId: "proc_1",

@@ -1,6 +1,6 @@
 {
   "name": "@mjakl/pi-processes",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "license": "MIT",
   "type": "module",
   "private": false,
@@ -17,14 +17,14 @@
   "pi": {
     "extensions": [
       "./src/index.ts"
-    ],
-    "video": "https://assets.aliou.me/pi-extensions/demos/pi-processes.mp4"
+    ]
   },
   "publishConfig": {
     "access": "public"
   },
   "files": [
     "src",
+    "!src/**/*.test.ts",
     "README.md"
   ],
   "dependencies": {
