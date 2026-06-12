@@ -3,14 +3,20 @@
  * window of lines for the `/ps` overlay.
  */
 
-import { readFileSync } from "node:fs";
+import { closeSync, openSync, readSync, statSync } from "node:fs";
 import type { Theme } from "@earendil-works/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
-import { stripAnsi } from "../utils";
+import { sanitizeLine } from "../utils";
 
 interface ParsedLine {
   type: "stdout" | "stderr";
   text: string;
+}
+
+interface LineCache {
+  size: number;
+  lines: ParsedLine[];
+  pending: string;
 }
 
 interface LogFileViewerOptions {
@@ -20,11 +26,14 @@ interface LogFileViewerOptions {
   follow?: boolean;
 }
 
+const MAX_RETAINED_LOG_LINES = 10_000;
+
 export class LogFileViewer {
   private filePath: string;
   private theme: Theme;
 
   private follow: boolean;
+  private cache: LineCache = { size: 0, lines: [], pending: "" };
   /** Absolute index of the last visible line (1-based).
    *  null = follow mode; always shows latest lines. */
   private anchorEnd: number | null = null;
@@ -36,27 +45,81 @@ export class LogFileViewer {
   }
 
   private readAllLines(): ParsedLine[] {
+    let size: number;
     try {
-      const content = readFileSync(this.filePath, "utf-8");
-      const rawLines = content.split("\n");
-      // Remove trailing empty string produced by a trailing newline.
-      if (rawLines.length > 0 && rawLines[rawLines.length - 1] === "") {
-        rawLines.pop();
-      }
-
-      // Combined format: "1:text" = stdout, "2:text" = stderr
-      return rawLines.map((line) => {
-        if (line.startsWith("2:")) {
-          return { type: "stderr" as const, text: line.slice(2) };
-        }
-        return {
-          type: "stdout",
-          text: line.startsWith("1:") ? line.slice(2) : line,
-        };
-      });
+      size = statSync(this.filePath).size;
     } catch {
+      this.resetCache();
       return [];
     }
+
+    if (size === this.cache.size) {
+      return this.cache.lines;
+    }
+
+    if (size < this.cache.size) {
+      this.resetCache();
+    }
+
+    if (size === 0) {
+      this.resetCache();
+      return [];
+    }
+
+    try {
+      const chunk = this.readRange(this.cache.size, size - this.cache.size);
+      this.cache.size = size;
+      this.appendChunk(chunk);
+      return this.cache.lines;
+    } catch {
+      return this.cache.lines;
+    }
+  }
+
+  private resetCache(): void {
+    this.cache = { size: 0, lines: [], pending: "" };
+  }
+
+  private readRange(start: number, length: number): string {
+    if (length <= 0) return "";
+
+    const fd = openSync(this.filePath, "r");
+    try {
+      const buffer = Buffer.allocUnsafe(length);
+      const bytesRead = readSync(fd, buffer, 0, length, start);
+      return buffer.subarray(0, bytesRead).toString("utf-8");
+    } finally {
+      closeSync(fd);
+    }
+  }
+
+  private appendChunk(chunk: string): void {
+    if (!chunk) return;
+
+    const rawLines = `${this.cache.pending}${chunk}`.split("\n");
+    this.cache.pending = rawLines.pop() ?? "";
+
+    for (const line of rawLines) {
+      this.cache.lines.push(this.parseLine(line));
+    }
+
+    if (this.cache.lines.length > MAX_RETAINED_LOG_LINES) {
+      this.cache.lines.splice(
+        0,
+        this.cache.lines.length - MAX_RETAINED_LOG_LINES,
+      );
+    }
+  }
+
+  private parseLine(line: string): ParsedLine {
+    // Combined format: "1:text" = stdout, "2:text" = stderr
+    if (line.startsWith("2:")) {
+      return { type: "stderr", text: line.slice(2) };
+    }
+    return {
+      type: "stdout",
+      text: line.startsWith("1:") ? line.slice(2) : line,
+    };
   }
 
   scrollToTop(): void {
@@ -100,7 +163,7 @@ export class LogFileViewer {
     const startIdx = Math.max(0, endIdx - maxLines);
 
     return lines.slice(startIdx, endIdx).map((line) => {
-      const text = truncateToWidth(stripAnsi(line.text), width);
+      const text = truncateToWidth(sanitizeLine(line.text), width);
       return line.type === "stderr" ? warning(text) : text;
     });
   }

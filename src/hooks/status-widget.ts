@@ -2,16 +2,17 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
+import { truncateToWidth } from "@earendil-works/pi-tui";
 import type { ProcessInfo } from "../constants";
 import type { ProcessManager } from "../manager";
 
 const STATUS_WIDGET_ID = "processes-status";
 
-function renderStatusWidget(
+function renderStatusWidgetLine(
   processes: ProcessInfo[],
   theme: ExtensionContext["ui"]["theme"],
-): string[] {
-  if (processes.length === 0) return [];
+): string | null {
+  if (processes.length === 0) return null;
 
   const activeCount = processes.filter(
     (process) =>
@@ -29,7 +30,7 @@ function renderStatusWidget(
     theme.fg("dim", String(finishedCount)) +
     theme.fg("dim", " finished");
 
-  return [line];
+  return line;
 }
 
 export function setupStatusWidget(
@@ -49,7 +50,14 @@ export function setupStatusWidget(
 
     latestContext.ui.setWidget(
       STATUS_WIDGET_ID,
-      renderStatusWidget(processes, latestContext.ui.theme),
+      (_tui, theme) => ({
+        render(width: number): string[] {
+          const line = renderStatusWidgetLine(processes, theme);
+          if (!line) return [];
+          return [truncateToWidth(line, width, "", true)];
+        },
+        invalidate(): void {},
+      }),
       { placement: "belowEditor" },
     );
   };

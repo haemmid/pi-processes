@@ -4,6 +4,7 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 import type { Component } from "@earendil-works/pi-tui";
 import { Text, truncateToWidth } from "@earendil-works/pi-tui";
+import { sanitizeLine } from "../utils";
 
 type Tone = "muted" | "accent" | "success" | "warning" | "error" | "dim";
 
@@ -45,17 +46,17 @@ export class ToolCallHeader implements Component {
     const parts = [this.theme.fg("toolTitle", this.theme.bold(title))];
 
     if (this.config.action) {
-      parts.push(this.theme.fg("accent", this.config.action));
+      parts.push(this.theme.fg("accent", sanitizeLine(this.config.action)));
     }
     if (this.config.mainArg) {
-      parts.push(this.theme.fg("accent", this.config.mainArg));
+      parts.push(this.theme.fg("accent", sanitizeLine(this.config.mainArg)));
     }
 
     for (const option of this.config.optionArgs ?? []) {
-      const label = option.label.trim().toLowerCase();
+      const label = sanitizeLine(option.label).trim().toLowerCase();
       const tone = option.tone ?? "dim";
       parts.push(
-        `${this.theme.fg("muted", `${label}=`)}${this.theme.fg(tone, option.value)}`,
+        `${this.theme.fg("muted", `${label}=`)}${this.theme.fg(tone, sanitizeLine(option.value))}`,
       );
     }
 
@@ -63,9 +64,9 @@ export class ToolCallHeader implements Component {
     for (const arg of this.config.longArgs ?? []) {
       if (!arg.value) continue;
       const label = arg.label
-        ? `${this.theme.fg("muted", `${arg.label.trim().toLowerCase()}:`)} `
+        ? `${this.theme.fg("muted", `${sanitizeLine(arg.label).trim().toLowerCase()}:`)} `
         : "";
-      lines.push(`${label}${this.theme.fg("dim", arg.value)}`);
+      lines.push(`${label}${this.theme.fg("dim", sanitizeLine(arg.value))}`);
     }
 
     return new Text(lines.join("\n"), 0, 0).render(width);

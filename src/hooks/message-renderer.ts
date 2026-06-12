@@ -5,6 +5,7 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
 import { MESSAGE_TYPE_PROCESS_UPDATE } from "../constants";
+import { sanitizeLine } from "../utils";
 
 interface ProcessUpdateDetails {
   processId: string;
@@ -71,8 +72,8 @@ export function setupMessageRenderer(pi: ExtensionAPI) {
 
       const text =
         theme.fg(color, `${icon} `) +
-        theme.fg("accent", `"${details.processName}"`) +
-        theme.fg("muted", ` (${details.processId})`) +
+        theme.fg("accent", `"${sanitizeLine(details.processName)}"`) +
+        theme.fg("muted", ` (${sanitizeLine(details.processId)})`) +
         " " +
         theme.fg(color, statusText) +
         theme.fg("muted", ` ${details.runtime}`);

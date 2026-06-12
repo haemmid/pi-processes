@@ -1,6 +1,11 @@
 import { type ExecuteResult, LIVE_STATUSES } from "../../constants";
 import type { ProcessManager } from "../../manager";
-import { formatRuntime, formatStatus, truncateCmd } from "../../utils";
+import {
+  formatRuntime,
+  formatStatus,
+  sanitizeLine,
+  truncateCmd,
+} from "../../utils";
 
 export function executeList(manager: ProcessManager): ExecuteResult {
   const processes = manager.list();
@@ -20,7 +25,7 @@ export function executeList(manager: ProcessManager): ExecuteResult {
   const summary = processes
     .map(
       (p) =>
-        `${p.id} "${p.name}": ${truncateCmd(p.command)} [${formatStatus(p)}] ${formatRuntime(p.startTime, p.endTime)}`,
+        `${p.id} "${sanitizeLine(p.name)}": ${truncateCmd(sanitizeLine(p.command))} [${formatStatus(p)}] ${formatRuntime(p.startTime, p.endTime)}`,
     )
     .join("\n");
 

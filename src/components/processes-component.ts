@@ -8,7 +8,7 @@ import {
 } from "@earendil-works/pi-tui";
 import { LIVE_STATUSES, type ProcessInfo } from "../constants";
 import type { ProcessManager } from "../manager";
-import { formatRuntime } from "../utils";
+import { formatRuntime, sanitizeLine } from "../utils";
 import { LogFileViewer } from "./log-file-viewer";
 
 const REFRESH_INTERVAL_MS = 300;
@@ -185,6 +185,13 @@ export class ProcessesComponent implements Component {
   }
 
   render(width: number): string[] {
+    const safeWidth = Math.max(1, Math.floor(width));
+    return this.renderInner(safeWidth).map((line) =>
+      truncateToWidth(line, safeWidth, "", true),
+    );
+  }
+
+  private renderInner(width: number): string[] {
     const overlayRows = Math.max(
       MIN_OVERLAY_ROWS,
       Math.floor((this.tui.terminal.rows ?? 24) * OVERLAY_FRACTION),
@@ -195,15 +202,19 @@ export class ProcessesComponent implements Component {
     const border = (text: string) => this.theme.fg("dim", text);
     const accent = (text: string) => this.theme.fg("accent", text);
 
-    const innerWidth = width - 4;
-    const listWidth = clamp(
-      Math.floor(innerWidth * 0.32),
-      MIN_LIST_WIDTH,
-      Math.min(MAX_LIST_WIDTH, innerWidth - 20),
-    );
-    const separator = border(" │ ");
+    const innerWidth = Math.max(0, width - 4);
+    const separator = innerWidth >= 20 ? border(" │ ") : "";
     const separatorWidth = visibleWidth(separator);
-    const logWidth = Math.max(10, innerWidth - listWidth - separatorWidth);
+    const desiredListWidth = clamp(
+      Math.floor(innerWidth * 0.32),
+      Math.min(MIN_LIST_WIDTH, innerWidth),
+      Math.min(MAX_LIST_WIDTH, innerWidth),
+    );
+    const listWidth = Math.min(
+      desiredListWidth,
+      Math.max(0, innerWidth - separatorWidth - 1),
+    );
+    const logWidth = Math.max(0, innerWidth - listWidth - separatorWidth);
 
     const row = (content: string): string => {
       const contentWidth = visibleWidth(content);
@@ -213,7 +224,7 @@ export class ProcessesComponent implements Component {
           : content;
       return `${border("│ ")}${safe}${" ".repeat(Math.max(0, innerWidth - visibleWidth(safe)))}${border(" │")}`;
     };
-    const divider = () => border(`├${"─".repeat(width - 2)}┤`);
+    const divider = () => border(`├${"─".repeat(Math.max(0, width - 2))}┤`);
     const paneRow = (left: string, right: string): string => {
       const paddedLeft = this.padVisible(left, listWidth);
       const paddedRight = this.padVisible(right, logWidth);
@@ -246,7 +257,7 @@ export class ProcessesComponent implements Component {
     lines.push(divider());
     lines.push(row(this.renderStatusLine(innerWidth, selected, viewer)));
     lines.push(row(this.renderFooter(innerWidth)));
-    lines.push(border(`╰${"─".repeat(width - 2)}╯`));
+    lines.push(border(`╰${"─".repeat(Math.max(0, width - 2))}╯`));
     return lines;
   }
 
@@ -383,7 +394,7 @@ export class ProcessesComponent implements Component {
         1 +
         visibleWidth(status);
       const nameWidth = Math.max(6, width - reservedWidth);
-      const name = truncateToWidth(process.name, nameWidth);
+      const name = truncateToWidth(sanitizeLine(process.name), nameWidth);
       const line = `${prefix} ${icon} ${selected ? accent(name) : name} ${processId} ${status}`;
       rendered.push(this.padVisible(line, width));
     }
@@ -430,7 +441,7 @@ export class ProcessesComponent implements Component {
       return this.padVisible(dim("No processes"), width);
     }
 
-    const meta = `${accent(selected.name)}${dim(" • ")}${dim(statusLabel(selected))}${dim(" • ")}${dim(formatRuntime(selected.startTime, selected.endTime))}`;
+    const meta = `${accent(sanitizeLine(selected.name))}${dim(" • ")}${dim(statusLabel(selected))}${dim(" • ")}${dim(formatRuntime(selected.startTime, selected.endTime))}`;
     const viewerStatus = viewer.renderStatusBar(
       Math.max(16, width - visibleWidth(meta) - 3),
     );

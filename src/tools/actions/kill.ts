@@ -1,5 +1,6 @@
 import type { ExecuteResult } from "../../constants";
 import type { ProcessManager } from "../../manager";
+import { sanitizeLine } from "../../utils";
 
 interface KillParams {
   id?: string;
@@ -23,7 +24,7 @@ function ambiguousResult(
   matches: Array<{ id: string; name: string }>,
 ): ExecuteResult {
   const choices = matches
-    .map((match) => `${match.id} ("${match.name}")`)
+    .map((match) => `${match.id} ("${sanitizeLine(match.name)}")`)
     .join(", ");
   const message =
     `Process name is ambiguous: ${id}. ` +
@@ -68,7 +69,7 @@ export async function executeKill(
 
   if (result.ok) {
     const verb = force ? "Force-killed" : "Terminated";
-    const message = `${verb} "${proc.name}" (${proc.id})`;
+    const message = `${verb} "${sanitizeLine(proc.name)}" (${proc.id})`;
     return {
       content: [{ type: "text", text: message }],
       details: {
@@ -81,8 +82,8 @@ export async function executeKill(
 
   if (result.reason === "timeout") {
     const message = force
-      ? `SIGKILL timed out for "${proc.name}" (${proc.id})`
-      : `SIGTERM timed out for "${proc.name}" (${proc.id}). Re-run process kill with id="${proc.id}" force=true to send SIGKILL.`;
+      ? `SIGKILL timed out for "${sanitizeLine(proc.name)}" (${proc.id})`
+      : `SIGTERM timed out for "${sanitizeLine(proc.name)}" (${proc.id}). Re-run process kill with id="${proc.id}" force=true to send SIGKILL.`;
     return {
       content: [{ type: "text", text: message }],
       details: {
@@ -94,8 +95,8 @@ export async function executeKill(
   }
 
   const message = force
-    ? `Failed to force-kill "${proc.name}" (${proc.id})`
-    : `Failed to terminate "${proc.name}" (${proc.id})`;
+    ? `Failed to force-kill "${sanitizeLine(proc.name)}" (${proc.id})`
+    : `Failed to terminate "${sanitizeLine(proc.name)}" (${proc.id})`;
   return {
     content: [{ type: "text", text: message }],
     details: {

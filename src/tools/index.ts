@@ -12,7 +12,7 @@ import {
   formatRuntime,
   formatTimestamp,
   hasAnsi,
-  stripAnsi,
+  sanitizeLine,
   truncateCmd,
 } from "../utils";
 import { executeAction } from "./actions";
@@ -181,7 +181,7 @@ Preferred pattern: start the process once, let the turn stop, and resume from th
           label: "Status",
           value:
             theme.fg("success", "Started") +
-            ` ${theme.fg("accent", `"${process.name}"`)} (${process.id}, PID: ${process.pid})`,
+            ` ${theme.fg("accent", `"${sanitizeLine(process.name)}"`)} (${process.id}, PID: ${process.pid})`,
           showCollapsed: true,
         });
         fields.push({
@@ -197,7 +197,7 @@ Preferred pattern: start the process once, let the turn stop, and resume from th
           lines.push("", theme.fg("accent", "stdout:"));
           for (const line of details.output.stdout.slice(-20)) {
             if (!hadAnsi && hasAnsi(line)) hadAnsi = true;
-            lines.push(stripAnsi(line));
+            lines.push(sanitizeLine(line));
           }
           if (details.output.stdout.length > 20) {
             lines.push(
@@ -213,7 +213,7 @@ Preferred pattern: start the process once, let the turn stop, and resume from th
           lines.push("", theme.fg("warning", "stderr:"));
           for (const line of details.output.stderr.slice(-10)) {
             if (!hadAnsi && hasAnsi(line)) hadAnsi = true;
-            lines.push(theme.fg("warning", stripAnsi(line)));
+            lines.push(theme.fg("warning", sanitizeLine(line)));
           }
           if (details.output.stderr.length > 10) {
             lines.push(
@@ -241,7 +241,7 @@ Preferred pattern: start the process once, let the turn stop, and resume from th
             : details.output.stderr;
         const preview = previewSource
           .slice(-2)
-          .map((l) => stripAnsi(l))
+          .map((l) => sanitizeLine(l))
           .join("\n");
         fields.push({
           label: "Output",
@@ -284,7 +284,7 @@ Preferred pattern: start the process once, let the turn stop, and resume from th
           }
 
           lines.push(
-            `  ${process.id} ${theme.fg("accent", `"${process.name}"`)}: ${truncateCmd(process.command)} [${status}] ${formatRuntime(process.startTime, process.endTime)}`,
+            `  ${process.id} ${theme.fg("accent", `"${sanitizeLine(process.name)}"`)}: ${truncateCmd(sanitizeLine(process.command))} [${status}] ${formatRuntime(process.startTime, process.endTime)}`,
           );
         }
 
@@ -302,7 +302,7 @@ Preferred pattern: start the process once, let the turn stop, and resume from th
                   : p.status === "exited"
                     ? theme.fg("error", `exit(${p.exitCode ?? "?"})`)
                     : theme.fg("muted", p.status);
-            return `${theme.fg("accent", `"${p.name}"`)} [${s}]`;
+            return `${theme.fg("accent", `"${sanitizeLine(p.name)}"`)} [${s}]`;
           })
           .join(", ");
         const more =

@@ -1,4 +1,4 @@
-export { hasAnsi, stripAnsi } from "./ansi";
+export { hasAnsi, sanitizeLine, stripAnsi } from "./ansi";
 export {
   formatRuntime,
   formatStatus,

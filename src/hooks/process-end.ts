@@ -1,7 +1,7 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { MESSAGE_TYPE_PROCESS_UPDATE, type ProcessInfo } from "../constants";
 import type { ProcessManager } from "../manager";
-import { formatRuntime, stripAnsi, truncateCmd } from "../utils";
+import { formatRuntime, sanitizeLine, truncateCmd } from "../utils";
 
 interface ProcessUpdateDetails {
   processId: string;
@@ -28,12 +28,13 @@ export function setupProcessEndHook(pi: ExtensionAPI, manager: ProcessManager) {
     // Build message
     let summary: string;
 
+    const processName = sanitizeLine(info.name);
     if (info.status === "killed") {
-      summary = `Process "${info.name}" (${info.id}) was terminated after ${runtime}.`;
+      summary = `Process "${processName}" (${info.id}) was terminated after ${runtime}.`;
     } else if (info.success) {
-      summary = `Process "${info.name}" (${info.id}) completed successfully after ${runtime}.`;
+      summary = `Process "${processName}" (${info.id}) completed successfully after ${runtime}.`;
     } else {
-      summary = `Process "${info.name}" (${info.id}) crashed with exit code ${info.exitCode ?? "?"} after ${runtime}.`;
+      summary = `Process "${processName}" (${info.id}) crashed with exit code ${info.exitCode ?? "?"} after ${runtime}.`;
     }
 
     const message = buildAgentMessage(summary, info, manager);
@@ -66,14 +67,17 @@ function buildAgentMessage(
   info: ProcessInfo,
   manager: ProcessManager,
 ): string {
-  const lines = [summary, `Command: ${truncateCmd(info.command, 160)}`];
+  const lines = [
+    summary,
+    `Command: ${truncateCmd(sanitizeLine(info.command), 160)}`,
+  ];
 
   const recentOutput = manager.getCombinedOutput(info.id, 20) ?? [];
   if (recentOutput.length > 0) {
     lines.push("", "Recent output:");
     for (const line of recentOutput) {
       const prefix = line.type === "stderr" ? "stderr" : "stdout";
-      lines.push(`${prefix}: ${truncateCmd(stripAnsi(line.text), 500)}`);
+      lines.push(`${prefix}: ${truncateCmd(sanitizeLine(line.text), 500)}`);
     }
   }
 

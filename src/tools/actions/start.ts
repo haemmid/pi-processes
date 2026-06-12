@@ -1,7 +1,7 @@
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import type { ExecuteResult } from "../../constants";
 import type { ProcessManager } from "../../manager";
-import { formatTimestamp } from "../../utils";
+import { formatTimestamp, sanitizeLine } from "../../utils";
 
 interface StartParams {
   name?: string;
@@ -43,7 +43,7 @@ export function executeStart(
       : "This turn will stop after start so you can wait for the automatic process-end notification. Do not call process list/output/logs just to check whether it is still running.";
 
     const startedAt = formatTimestamp(proc.startTime);
-    const message = `Started "${proc.name}" (${proc.id}, PID: ${proc.pid})\nStarted at: ${startedAt}\nLogs: ${proc.stdoutFile}\n${nextStep}`;
+    const message = `Started "${sanitizeLine(proc.name)}" (${proc.id}, PID: ${proc.pid})\nStarted at: ${startedAt}\nLogs: ${proc.stdoutFile}\n${nextStep}`;
     return {
       content: [{ type: "text", text: message }],
       details: {

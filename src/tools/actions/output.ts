@@ -5,7 +5,7 @@ import {
   type ResolveProcessResult,
 } from "../../constants";
 import type { ProcessManager } from "../../manager";
-import { formatStatus, stripAnsi } from "../../utils";
+import { formatStatus, sanitizeLine } from "../../utils";
 
 const MAX_BYTES = 50 * 1024; // 50KB
 
@@ -22,7 +22,7 @@ function resolveProcessResult(
 
   if (result.reason === "ambiguous") {
     const choices = (result.matches ?? [])
-      .map((match) => `${match.id} ("${match.name}")`)
+      .map((match) => `${match.id} ("${sanitizeLine(match.name)}")`)
       .join(", ");
     const message =
       `Process name is ambiguous: ${id}. ` +
@@ -86,18 +86,18 @@ export function executeOutput(
   const logFiles = manager.getLogFiles(proc.id);
   const stdoutLines = output.stdout.length;
   const stderrLines = output.stderr.length;
-  const message = `"${proc.name}" (${proc.id}) [${formatStatus(proc)}]: ${stdoutLines} stdout lines, ${stderrLines} stderr lines`;
+  const message = `"${sanitizeLine(proc.name)}" (${proc.id}) [${formatStatus(proc)}]: ${stdoutLines} stdout lines, ${stderrLines} stderr lines`;
 
-  // Build the full text content (ANSI-stripped), then truncate from the tail
-  // like bash does, so the agent sees the most recent output.
+  // Build sanitized text content, then truncate from the tail like bash does,
+  // so the agent sees the most recent output.
   const outputParts: string[] = [message];
   if (output.stdout.length > 0) {
     outputParts.push("\nstdout:");
-    outputParts.push(...output.stdout.map(stripAnsi));
+    outputParts.push(...output.stdout.map(sanitizeLine));
   }
   if (output.stderr.length > 0) {
     outputParts.push("\nstderr:");
-    outputParts.push(...output.stderr.map(stripAnsi));
+    outputParts.push(...output.stderr.map(sanitizeLine));
   }
   if (LIVE_STATUSES.has(proc.status)) {
     outputParts.push(
