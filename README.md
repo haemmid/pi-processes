@@ -1,12 +1,23 @@
-# Processes Extension
+# Pi Processes
 
-> **Note**
-> This is a stripped down fork of https://github.com/aliou/pi-processes.
-> Most people should likely use the original project instead.
+**Manage long-running commands from Pi without blocking the conversation.**
 
-Manage background processes from Pi without blocking the conversation.
+## User Guide
 
-## Installation
+### Why Pi Processes
+
+Coding agents often need to start dev servers, watch-mode tests, log tails, port forwards, and other commands that should keep running while the conversation continues. `pi-processes` gives Pi a safe, visible way to manage those commands.
+
+### Features
+
+- **Agent-facing process tool** — the agent can start, inspect, kill, and clear managed processes.
+- **Event-driven completion** — the agent is notified when a managed process exits, fails, or is externally killed.
+- **`/ps` overlay** — users can monitor processes and logs without asking the agent to poll.
+- **Status line** — a compact process status appears while managed processes exist.
+- **File-backed logs** — process output is preserved outside the agent context window.
+- **Background-command interception** — optional guardrails steer long-running shell commands toward the `process` tool.
+
+### Install
 
 Install from npm:
 
@@ -14,102 +25,61 @@ Install from npm:
 pi install npm:@mjakl/pi-processes
 ```
 
-For development builds, install from git:
+Install from git:
 
 ```bash
-pi install git:https://github.com/mjakl/pi-processes
+pi install git:github.com/mjakl/pi-processes
 ```
 
-## What this fork keeps
+Or install from a local checkout:
 
-- the `process` tool for starting, listing, inspecting, killing, and clearing managed processes
-- a single `/ps` overlay for monitoring processes
-- a tiny always-visible process status line while managed processes exist, showing active/finished counts
-- process completion notifications in the conversation
-- file-backed logs so process output is preserved outside agent context
+```bash
+pi install /path/to/pi-processes
+```
 
-## What this fork removes
+### Using Pi Processes
 
-- all `/ps:*` subcommands
-- the log dock
-- the settings UI
-- extra widget state and dock controls
+The `process` tool is for the agent, not for direct user input. Ask the agent to start or inspect long-running work, then use `/ps` to watch it.
 
-## Usage
-
-### Agent tool (LLM-facing)
-
-The `process` tool is for the agent. Users should ask the agent to start or inspect long-running commands, then monitor them with `/ps`.
-
-Tool-call examples:
+Example user prompts:
 
 ```text
-process start "pnpm dev" name="backend-dev"
-process start "pnpm test --watch" name="tests"
-process start "pnpm dev" name="backend-dev" continueAfterStart=true
-process list
-process output id="backend-dev"
-process logs id="proc_1"
-process kill id="backend-dev"
-process kill id="proc_1" force=true
-process clear
+Start the dev server with pnpm dev and call it backend-dev.
+Run the test watcher as tests.
+Show me the latest output from backend-dev.
+Stop the backend-dev process.
 ```
 
-#### Matching processes
-
-For `output`, `logs`, and `kill`, `id` must be either:
-
-- the exact process ID (`proc_1`)
-- the exact friendly process name (`backend-dev`)
-
-If multiple processes share the same name, use the process ID.
-
-#### Notifications for `start`
-
-Do not poll after starting a process.
-
-This tool is event-driven: the agent is notified automatically when a process exits, fails, or is externally killed. By default, `process start` ends the current agent turn so the agent actually waits for that notification instead of immediately polling. If the next step is waiting, call `process start` by itself rather than batching it with unrelated tools.
-
-The intended pattern is:
-
-1. `process start`
-2. let the turn stop and wait for the automatic notification if the process ends
-3. resume from that notification
-
-Use `continueAfterStart=true` only when the agent has immediate, specific, non-polling work to do after starting the process.
-
-Repeated `process list`, `process output`, or `process logs` calls just to see whether the process is still running are an anti-pattern.
-
-#### Logs and output
-
-- `process output` returns a one-off tailed stdout/stderr snapshot for agent consumption.
-- `process logs` returns file paths for `stdout`, `stderr`, and a combined view for the `/ps` overlay.
-- Use `output`/`logs` only when the user asks, when you need a diagnostic snapshot, or when investigating a problem - not as a polling loop.
-
-#### Killing processes
-
-- `process kill id="..."` sends `SIGTERM`
-- `process kill id="..." force=true` sends `SIGKILL`
-- tool-triggered kills never notify the agent
+The agent should start managed processes through the `process` tool instead of running shell backgrounding such as `command &`, `nohup`, `disown`, or `setsid`.
 
 ### `/ps` overlay
 
-`/ps` opens the process overlay.
+Run:
+
+```text
+/ps
+```
 
 Inside the overlay:
 
-- `up/down` - move the highlighted process
-- `left/right` - scroll older/newer log output for the highlighted process
-- `g/G` - jump to the top or back to the live tail
-- `x` - terminate the highlighted process; press `x` again when it shows `needs kill` to force-kill it
-- `c` - clear finished processes
-- `q` or `Esc` - close the overlay
+- `up` / `down` — move the highlighted process.
+- `left` / `right` — scroll older/newer log output for the highlighted process.
+- `g` / `G` — jump to the top or back to the live tail.
+- `x` — terminate the highlighted process; press `x` again when it shows `needs kill` to force-kill it.
+- `c` — clear finished processes.
+- `q` or `Esc` — close the overlay.
 
 The right side always shows logs for the currently highlighted process.
 
-## Configuration
+### Configuration
 
-Global config lives in `~/.pi/agent/extensions/process.json`.
+Global config lives in:
+
+```text
+~/.pi/agent/extensions/process.json
+```
+
+Example:
 
 ```json
 {
@@ -126,12 +96,95 @@ Global config lives in `~/.pi/agent/extensions/process.json`.
 }
 ```
 
-- `output.defaultTailLines` - default number of lines returned by `process output`
-- `output.maxOutputLines` - hard cap for `process output`
-- `execution.shellPath` - absolute shell path override used for process startup
-- `interception.blockBackgroundCommands` - block shell backgrounding (`&`, `nohup`, `disown`, `setsid`) and obvious long-running foreground commands such as `pnpm dev`, `docker compose up`, `tail -f`, or `kubectl port-forward`, and guide the agent to use the `process` tool instead
+Options:
 
-## Development
+- `output.defaultTailLines` — default number of lines returned by `process output`.
+- `output.maxOutputLines` — hard cap for `process output`.
+- `execution.shellPath` — absolute shell path override used for process startup.
+- `interception.blockBackgroundCommands` — block shell backgrounding and obvious long-running foreground commands such as `pnpm dev`, `docker compose up`, `tail -f`, or `kubectl port-forward`, and guide the agent to use the `process` tool instead.
+
+---
+
+## Technical Reference
+
+These sections document the agent-facing tool contract and runtime behavior.
+
+### Tool API
+
+The tool is named `process`.
+
+Actions:
+
+- `start` — start a managed process.
+- `list` — list managed processes.
+- `output` — return a one-off tailed stdout/stderr snapshot.
+- `logs` — return file paths for stdout, stderr, and combined logs.
+- `kill` — terminate or force-kill a process.
+- `clear` — remove finished processes from the manager.
+
+Tool-call examples:
+
+```text
+process start "pnpm dev" name="backend-dev"
+process start "pnpm test --watch" name="tests"
+process start "pnpm dev" name="backend-dev" continueAfterStart=true
+process list
+process output id="backend-dev"
+process logs id="proc_1"
+process kill id="backend-dev"
+process kill id="proc_1" force=true
+process clear
+```
+
+Field rules:
+
+- `start` requires `command` and `name`.
+- `output`, `logs`, and `kill` require `id`.
+- `kill` accepts `force=true` to send `SIGKILL` instead of `SIGTERM`.
+- `start` accepts `continueAfterStart=true` only when the agent has immediate, specific, non-polling work to do after startup.
+
+### Matching processes
+
+For `output`, `logs`, and `kill`, `id` must be either:
+
+- the exact process ID, such as `proc_1`
+- the exact friendly process name, such as `backend-dev`
+
+If multiple processes share the same name, use the process ID.
+
+### Event-driven start behavior
+
+Do not poll after starting a process.
+
+By default, `process start` ends the current agent turn. The intended pattern is:
+
+1. Call `process start`.
+2. Let the turn stop.
+3. Resume when Pi sends the automatic notification for process exit, failure, or external kill.
+
+Use `continueAfterStart=true` only when there is immediate, useful work to do that is not polling.
+
+Repeated `process list`, `process output`, or `process logs` calls just to check whether a process is still running are an anti-pattern.
+
+### Logs and output
+
+- `process output` is for one-off diagnostic snapshots in the conversation.
+- `process logs` returns log file paths for deeper inspection and for the `/ps` overlay.
+- Use `output` and `logs` when the user asks, when debugging, or when investigating a specific problem.
+
+### Killing processes
+
+- `process kill id="..."` sends `SIGTERM`.
+- `process kill id="..." force=true` sends `SIGKILL`.
+- Tool-triggered kills never notify the agent.
+
+### Runtime notes
+
+- Log files live in a temporary directory managed by the extension.
+- Background processes are cleaned up when the session shuts down.
+- The `/ps` overlay reads from file-backed logs, so process output remains available without stuffing the full log into the agent context.
+
+### Development
 
 There are no Git hooks installed by this repository. Before committing or opening a PR, consider running:
 
@@ -147,7 +200,6 @@ After dependency changes, also verify the lockfile with:
 pnpm install --frozen-lockfile --ignore-scripts
 ```
 
-## Notes
+## License
 
-- Log files live in a temporary directory managed by the extension.
-- Background processes are cleaned up when the session shuts down.
+MIT
