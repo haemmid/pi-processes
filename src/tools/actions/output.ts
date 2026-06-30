@@ -102,7 +102,7 @@ export function executeOutput(
   if (LIVE_STATUSES.has(proc.status)) {
     outputParts.push(
       "",
-      "[Process is still active. This was a one-off snapshot; wait for the automatic process-end notification instead of calling process output/list/logs repeatedly.]",
+      "[Process is still active. This was a one-off snapshot; use process list to check status.]",
     );
   }
 
