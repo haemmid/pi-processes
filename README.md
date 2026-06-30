@@ -11,7 +11,7 @@ Designed for use with [jmfederico/pi-web](https://github.com/jmfederico/pi-web).
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
 
 <p align="center">
-  <img src="assets/hero.png" alt="pi-processes managed process workflow" width="760">
+  <img src="https://raw.githubusercontent.com/haemmid/pi-processes/v0.9.0/assets/hero.svg" alt="pi-processes managed process workflow" width="760">
 </p>
 
 ## Why
@@ -113,7 +113,7 @@ process kill id="my-site:astro"
 ## Demo
 
 <p align="center">
-  <img src="assets/demo-pi-web.gif" alt="pi-processes demo in pi-web" width="760">
+  <img src="https://raw.githubusercontent.com/haemmid/pi-processes/v0.9.0/assets/demo-pi-web.gif" alt="pi-processes demo in pi-web" width="760">
 </p>
 
 ## Configuration
