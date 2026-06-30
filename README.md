@@ -38,6 +38,7 @@ This package gives the agent a stable process lifecycle instead:
 - [Limitations](#limitations)
 - [Development](#development)
 - [Acknowledgements](#acknowledgements)
+- [Changelog](#changelog)
 - [License](#license)
 
 ## Features
@@ -212,6 +213,10 @@ pnpm install --frozen-lockfile --ignore-scripts
 ## Acknowledgements
 
 This package started as a fork of [`mjakl/pi-processes`](https://github.com/mjakl/pi-processes), which was based on [`aliou/pi-processes`](https://github.com/aliou/pi-processes). This fork focuses specifically on plain-text, pi-web-friendly, agent-facing process management without TUI widgets or overlays.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
