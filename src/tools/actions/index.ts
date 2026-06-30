@@ -12,6 +12,7 @@ interface ActionParams {
   action: string;
   command?: string;
   name?: string;
+  cwd?: string;
   id?: string;
   force?: boolean;
   restart?: boolean;

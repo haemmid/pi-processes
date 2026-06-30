@@ -6,6 +6,7 @@ import { formatTimestamp, sanitizeLine } from "../../utils";
 interface StartParams {
   name?: string;
   command?: string;
+  cwd?: string;
   restart?: boolean;
 }
 
@@ -39,7 +40,7 @@ export function executeStart(
     const proc = manager.start(
       params.name,
       params.command,
-      ctx.cwd,
+      params.cwd ?? ctx.cwd,
       params.restart ? { restart: true } : undefined,
     );
 

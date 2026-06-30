@@ -116,6 +116,7 @@ The tool is named `process`.
 ```text
 process start "pnpm dev" name="backend-dev"
 process start "pnpm test --watch" name="tests"
+process start "pnpm dev" name="backend-dev" cwd="/path/to/project"
 process start "pnpm dev" name="backend-dev" restart=true
 process list
 process output id="backend-dev"
@@ -132,6 +133,7 @@ process clear
 - `kill` accepts `force=true` to send `SIGKILL` instead of `SIGTERM`.
 - `start` refuses if a process with the same name is already running.
 - `start` accepts `restart=true` to kill any existing process with the same name and start a new one.
+- `start` accepts `cwd` to override the working directory (defaults to session cwd).
 
 ## Killing processes
 

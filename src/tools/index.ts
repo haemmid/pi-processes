@@ -28,6 +28,12 @@ const ProcessesParams = Type.Object({
         "Friendly name for the process (required for start, e.g. 'backend-dev', 'test-runner')",
     }),
   ),
+  cwd: Type.Optional(
+    Type.String({
+      description:
+        "Working directory for the command (for start action). Defaults to the session working directory. Prefer this over 'cd dir && command' shell wrappers.",
+    }),
+  ),
   id: Type.Optional(
     Type.String({
       description:

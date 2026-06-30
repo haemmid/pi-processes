@@ -1,26 +1,15 @@
-/** ESC byte used by terminal control sequences. */
-const ESC = "\u001b";
-
 /**
- * Broad terminal escape matcher.
+ * Strip ANSI escape codes and other terminal control characters from a string.
  *
- * Covers:
- * - CSI, including private modes such as ESC[?25l
- * - OSC terminated by BEL or ST
- * - DCS/SOS/PM/APC terminated by BEL or ST
- * - single-character Fe escapes such as RIS (ESCc)
+ * Removes:
+ * - All CSI sequences (\x1b[...X) - SGR, cursor movement, erase, scroll, etc.
+ * - OSC sequences (\x1b]...\x07 or \x1b]...\x1b\\)
+ * - APC sequences (\x1b_...\x07 or \x1b_...\x1b\\)
+ * - Remaining C0 control chars except tab/newline
  */
-const ANSI_PATTERN = new RegExp(
-  [
-    "\\x1B\\[[0-?]*[ -/]*[@-~]",
-    "\\x1B\\][^\\x07\\x1B]*(?:\\x07|\\x1B\\\\)",
-    "\\x1B[PX^_][^\\x07\\x1B]*(?:\\x07|\\x1B\\\\)",
-    "\\x1B[@-_]",
-  ].join("|"),
-  "gu",
-);
 
-const CONTROL_CHARS_PATTERN = /[\p{Cc}]/gu;
+const ESC = String.fromCodePoint(0x001b);
+const BEL = String.fromCodePoint(0x0007);
 
 /**
  * Check if a string contains terminal escape codes.
@@ -34,11 +23,35 @@ export function hasAnsi(str: string): boolean {
  * whitespace, and line breaks.
  */
 export function stripAnsi(str: string): string {
-  if (!str.includes(ESC)) {
-    return str;
+  let clean = str;
+
+  if (str.includes(ESC)) {
+    // Strip all CSI sequences (ESC[...X where X is any letter)
+    clean = clean.replace(new RegExp(`${ESC}\\[[0-9;]*[A-Za-z]`, "gu"), "");
+    // Strip OSC sequences: ESC]...<BEL> or ESC]...<ESC>\\
+    clean = clean.replace(
+      new RegExp(`${ESC}\\][^${BEL}${ESC}]*(?:${BEL}|${ESC}\\\\)`, "gu"),
+      "",
+    );
+    // Strip APC sequences: ESC_...<BEL> or ESC_...<ESC>\\ (used for cursor marker)
+    clean = clean.replace(
+      new RegExp(`${ESC}_[^${BEL}${ESC}]*(?:${BEL}|${ESC}\\\\)`, "gu"),
+      "",
+    );
   }
 
-  return str.replace(ANSI_PATTERN, "");
+  // Strip terminal control chars like carriage return/backspace that can
+  // corrupt TUI layout when rendered back into pi.
+  return Array.from(clean)
+    .filter((char) => {
+      const code = char.codePointAt(0) ?? 0;
+      const isDisallowedC0 =
+        (code >= 0x00 && code <= 0x08) ||
+        (code >= 0x0b && code <= 0x1f) ||
+        code === 0x7f;
+      return !isDisallowedC0;
+    })
+    .join("");
 }
 
 /**
@@ -50,5 +63,5 @@ export function stripAnsi(str: string): string {
  * alter Pi's surrounding TUI.
  */
 export function sanitizeLine(str: string): string {
-  return stripAnsi(str).replace(/\t/g, "  ").replace(CONTROL_CHARS_PATTERN, "");
+  return stripAnsi(str).replace(/\t/g, "  ");
 }
