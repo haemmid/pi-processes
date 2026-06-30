@@ -115,6 +115,13 @@ export class ProcessManager {
   }
 
   start(name: string, command: string, cwd: string): ProcessInfo | null {
+    // Check for duplicate live process BEFORE spawning
+    for (const proc of this.processes.values()) {
+      if (proc.name === name && LIVE_STATUSES.has(proc.status)) {
+        return null;
+      }
+    }
+
     const id = `proc_${++this.counter}`;
     const stdoutFile = join(this.logDir, `${id}-stdout.log`);
     const stderrFile = join(this.logDir, `${id}-stderr.log`);
@@ -145,19 +152,6 @@ export class ProcessManager {
       combinedFile,
       triggerAgentTurnOnEnd: true,
     };
-
-    // Check for duplicate live process with the same name
-    let existing: ManagedProcess | undefined;
-    for (const proc of this.processes.values()) {
-      if (proc.name === name && LIVE_STATUSES.has(proc.status)) {
-        existing = proc;
-        break;
-      }
-    }
-
-    if (existing) {
-      return null; // Signal caller that process already exists
-    }
 
     this.processes.set(id, managed);
 
@@ -259,16 +253,36 @@ export class ProcessManager {
     }
 
     const queryLower = query.toLowerCase();
-    const matches = Array.from(this.processes.values())
-      .filter((managed) => managed.name.toLowerCase() === queryLower)
-      .map((managed) => this.toProcessInfo(managed));
+    const allMatches = Array.from(this.processes.values()).filter(
+      (managed) => managed.name.toLowerCase() === queryLower,
+    );
 
-    if (matches.length === 1) {
-      return { ok: true, info: matches[0] };
+    const liveMatches = allMatches.filter((managed) =>
+      LIVE_STATUSES.has(managed.status),
+    );
+
+    if (liveMatches.length === 1) {
+      return { ok: true, info: this.toProcessInfo(liveMatches[0]) };
     }
 
-    if (matches.length > 1) {
-      return { ok: false, reason: "ambiguous", matches };
+    if (liveMatches.length > 1) {
+      return {
+        ok: false,
+        reason: "ambiguous",
+        matches: liveMatches.map((m) => this.toProcessInfo(m)),
+      };
+    }
+
+    if (allMatches.length === 1) {
+      return { ok: true, info: this.toProcessInfo(allMatches[0]) };
+    }
+
+    if (allMatches.length > 1) {
+      return {
+        ok: false,
+        reason: "ambiguous",
+        matches: allMatches.map((m) => this.toProcessInfo(m)),
+      };
     }
 
     return { ok: false, reason: "not_found" };

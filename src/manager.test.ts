@@ -185,9 +185,57 @@ describe("ProcessManager", () => {
   it("rejects duplicate process names", () => {
     const first = manager.start("server", "pnpm dev", process.cwd());
     if (!first) throw new Error("start should not return null");
+
     const second = manager.start("server", "pnpm dev", process.cwd());
 
     expect(second).toBeNull();
+    expect(mocks.spawnCommand).toHaveBeenCalledTimes(1);
     expect(manager.resolve("server")).toEqual({ ok: true, info: first });
+  });
+
+  it("prioritizes live process over finished duplicate names", async () => {
+    const first = manager.start("server", "pnpm dev", process.cwd());
+    if (!first) throw new Error("start should not return null");
+
+    // Simulate first process finishing via kill
+    mocks.isProcessGroupAlive.mockReturnValue(false);
+    const killPromise = manager.kill(first.id, {
+      signal: "SIGTERM",
+      timeoutMs: 3000,
+    });
+    await vi.advanceTimersByTimeAsync(3000);
+    await killPromise;
+
+    // Start new process with same name — should succeed because first is finished
+    const second = manager.start("server", "pnpm dev", process.cwd());
+    if (!second) throw new Error("start should not return null");
+
+    // resolve should return the live process
+    expect(manager.resolve("server")).toEqual({ ok: true, info: second });
+    expect(manager.resolve(second.id)).toEqual({ ok: true, info: second });
+  });
+
+  it("reports ambiguity when multiple live processes share a name", () => {
+    const first = manager.start("server", "pnpm dev", process.cwd());
+    if (!first) throw new Error("start should not return null");
+
+    // Manually add another process with same name
+    const second = manager.start("other-cmd", "pnpm build", process.cwd());
+    if (!second) throw new Error("start should not return null");
+    // Directly mutate the internal map (test access to private field)
+    const map = (
+      manager as unknown as { processes: Map<string, { name: string }> }
+    ).processes;
+    const secondManaged = map.get(second.id);
+    if (secondManaged) {
+      secondManaged.name = "server";
+    }
+
+    const result = manager.resolve("server");
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toBe("ambiguous");
+      expect(result.matches).toHaveLength(2);
+    }
   });
 });

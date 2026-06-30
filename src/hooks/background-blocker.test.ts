@@ -55,4 +55,26 @@ describe("analyzeManagedCommand", () => {
       },
     );
   });
+
+  it("blocks npx long-running commands", () => {
+    expect(analyzeManagedCommand("npx vite --host 0.0.0.0")).toEqual({
+      kind: "long_running",
+      suggestedName: "vite",
+    });
+    expect(analyzeManagedCommand("npx astro dev")).toEqual({
+      kind: "long_running",
+      suggestedName: "astro",
+    });
+    expect(analyzeManagedCommand("npx next dev")).toEqual({
+      kind: "long_running",
+      suggestedName: "next",
+    });
+  });
+
+  it("allows npx finite commands", () => {
+    expect(analyzeManagedCommand("npx cowsay hello")).toBeUndefined();
+    expect(
+      analyzeManagedCommand("npx create-react-app my-app"),
+    ).toBeUndefined();
+  });
 });

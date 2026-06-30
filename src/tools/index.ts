@@ -61,9 +61,8 @@ Actions: start, list, output, logs, kill, clear, restart.
 - kill supports optional 'force=true' for SIGKILL
 - restart is preferred over start+kill: it safely awaits kill before starting new process
 
-This tool is event-driven: the agent is notified automatically when a process exits, fails, or is externally killed.
-Tool-triggered kills never notify.
-Use 'output' or 'logs' only on demand: when the user asks, when you need a one-off diagnostic snapshot, or when investigating a problem.`,
+Processes continue in the background. Use process output or process logs for a one-off snapshot when you need to inspect status. Do not poll repeatedly just to wait.
+Tool-triggered kills never notify.`,
     promptSnippet:
       "Start and manage background processes without blocking the conversation; process start waits for notifications by default",
     promptGuidelines: [
@@ -71,6 +70,7 @@ Use 'output' or 'logs' only on demand: when the user asks, when you need a one-o
       "After process start, the agent continues its turn — use process output/logs to check status if needed.",
       "Use process output or process logs only for a one-off inspection, explicit user request, or debugging.",
       "Use process restart to replace an existing process — it safely awaits kill before starting the new one.",
+      "Do not poll process output/list repeatedly just to wait for a process to finish.",
     ],
 
     parameters: ProcessesParams,

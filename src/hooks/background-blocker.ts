@@ -192,6 +192,16 @@ function isLongRunningCommand(
     return hasAnyArg(args, WATCH_FLAGS);
   }
   if (name === "rails") return args[0] === "server" || args[0] === "s";
+  if (name === "npx" && rawArgs[0]) {
+    const execName = basename(rawArgs[0]).toLowerCase();
+    const execArgs = rawArgs.slice(1);
+    return isLongRunningCommand(
+      rawArgs[0],
+      execArgs,
+      execName,
+      execArgs.map((arg) => arg.toLowerCase()),
+    );
+  }
 
   return (
     looksLikeSuspiciousScript(rawName) ||
@@ -228,6 +238,10 @@ function suggestProcessName(words: string[]): string {
   if (name === "docker" || name === "docker-compose") return "compose";
   if (name === "kubectl" && args[0] === "port-forward") return "port-forward";
   if (name === "tail" || name === "journalctl") return "logs";
+  if (name === "npx" && rawArgs[0]) {
+    const execName = basename(rawArgs[0]).toLowerCase();
+    return sanitizeProcessName(execName);
+  }
   if (SHELL_LAUNCHERS.has(name) && rawArgs[0]) {
     const scriptName = sanitizeProcessName(rawArgs[0]);
     if (scriptName !== "process") return scriptName;

@@ -33,7 +33,7 @@ export function executeList(manager: ProcessManager): ExecuteResult {
     LIVE_STATUSES.has(process.status),
   );
   const waitNotice = hasLiveProcess
-    ? "\n\nActive processes notify automatically on exit. Do not call process list/output/logs repeatedly just to wait."
+    ? "\n\nUse process output/logs only when you need a one-off status snapshot. Do not poll repeatedly just to wait."
     : "";
   const message = `${processes.length} process(es):\n${summary}${waitNotice}`;
   return {

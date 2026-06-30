@@ -104,7 +104,9 @@ describe("executeRestart", () => {
     );
 
     expect(result.details.success).toBe(false);
-    expect(result.details.message).toContain("Missing required parameter: name");
+    expect(result.details.message).toContain(
+      "Missing required parameter: name",
+    );
     expect(mockManager.resolve).not.toHaveBeenCalled();
   });
 
