@@ -23,6 +23,6 @@ During UI tests that require processes to be running, either give the user a pro
 - `src/config.ts` - config loader
 - `src/constants/` - types and constants
 - `src/tools/` - tool actions (start, list, output, logs, kill, clear)
-- `src/hooks/` - event hooks (process-end, cleanup, background-blocker)
+- `src/hooks/` - event hooks (cleanup, background-blocker)
 - `src/utils/` - helpers (command-executor, process-group, format, ansi)
 - `test/` - test scripts

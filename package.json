@@ -1,5 +1,5 @@
 {
-  "name": "@mjakl/pi-processes",
+  "name": "@haemmid/pi-processes",
   "version": "0.8.1",
   "license": "MIT",
   "type": "module",
@@ -12,7 +12,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/mjakl/pi-processes"
+    "url": "https://github.com/haemmid/pi-processes"
   },
   "pi": {
     "extensions": [
@@ -38,7 +38,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.3.13",
     "@earendil-works/pi-coding-agent": "0.75.1",
-    "@earendil-works/pi-tui": "0.75.1",
+
     "@types/node": "^25.0.10",
     "typebox": "^1.1.24",
     "typescript": "^5.9.3",
@@ -55,9 +55,7 @@
     "@earendil-works/pi-coding-agent": {
       "optional": true
     },
-    "@earendil-works/pi-tui": {
-      "optional": true
-    },
+
     "typebox": {
       "optional": true
     }

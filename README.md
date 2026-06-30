@@ -4,7 +4,7 @@
 
 This is a fork of [mjakl/pi-processes](https://github.com/mjakl/pi-processes), which is itself a fork of [aliou/pi-processes](https://github.com/aliou/pi-processes).
 
-**Goal of this fork:** strip everything unnecessary for an automated workflow where the agent manages dev servers. No TUI, no `/ps` overlay, no status widgets — just the core process tool and event-driven lifecycle.
+**Goal of this fork:** strip everything unnecessary for an automated workflow where the agent manages dev servers. No TUI, no `/ps` overlay, no status widgets — just the core process tool and session cleanup.
 
 ## Features
 
@@ -18,13 +18,13 @@ This is a fork of [mjakl/pi-processes](https://github.com/mjakl/pi-processes), w
 Install from npm:
 
 ```bash
-pi install npm:@mjakl/pi-processes
+pi install npm:@haemmid/pi-processes
 ```
 
 Install from git:
 
 ```bash
-pi install git:github.com/mjakl/pi-processes
+pi install git:github.com/haemmid/pi-processes
 ```
 
 Or install from a local checkout:
