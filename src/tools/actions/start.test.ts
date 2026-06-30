@@ -23,7 +23,7 @@ function fakeProcess(overrides: Partial<ProcessInfo> = {}): ProcessInfo {
 }
 
 describe("executeStart", () => {
-  it("terminates the agent turn by default so the notification becomes the next step", () => {
+  it("returns process info on successful start", () => {
     const manager = {
       start: vi.fn(() => fakeProcess()),
     } as const;
@@ -35,25 +35,8 @@ describe("executeStart", () => {
     );
 
     expect(result.details.success).toBe(true);
-    expect(result.terminate).toBe(true);
     expect(result.details.message).toContain("Started at: 2024-01-02 03:04:05");
-    expect(result.details.message).toContain("wait for the automatic");
-  });
-
-  it("can keep the agent turn going when there is explicit non-polling work", () => {
-    const manager = {
-      start: vi.fn(() => fakeProcess()),
-    } as const;
-
-    const result = executeStart(
-      { name: "server", command: "pnpm dev", continueAfterStart: true },
-      manager as never,
-      { cwd: process.cwd() } as never,
-    );
-
-    expect(result.details.success).toBe(true);
-    expect(result.terminate).toBe(false);
-    expect(result.details.message).toContain("specific non-polling work");
+    expect(result.details.message).toContain("Logs: /tmp/stdout.log");
   });
 
   it("returns a friendly error when process startup throws", () => {

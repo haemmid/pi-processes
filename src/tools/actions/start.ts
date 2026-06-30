@@ -6,7 +6,6 @@ import { formatTimestamp, sanitizeLine } from "../../utils";
 interface StartParams {
   name?: string;
   command?: string;
-  continueAfterStart?: boolean;
 }
 
 export function executeStart(
@@ -37,13 +36,9 @@ export function executeStart(
 
   try {
     const proc = manager.start(params.name, params.command, ctx.cwd);
-    const shouldContinue = params.continueAfterStart === true;
-    const nextStep = shouldContinue
-      ? "Continue with specific non-polling work now. Do not call process list/output/logs just to wait; the extension will notify you when this process ends."
-      : "This turn will stop after start so you can wait for the automatic process-end notification. Do not call process list/output/logs just to check whether it is still running.";
 
     const startedAt = formatTimestamp(proc.startTime);
-    const message = `Started "${sanitizeLine(proc.name)}" (${proc.id}, PID: ${proc.pid})\nStarted at: ${startedAt}\nLogs: ${proc.stdoutFile}\n${nextStep}`;
+    const message = `Started "${sanitizeLine(proc.name)}" (${proc.id}, PID: ${proc.pid})\nStarted at: ${startedAt}\nLogs: ${proc.stdoutFile}`;
     return {
       content: [{ type: "text", text: message }],
       details: {
@@ -52,7 +47,6 @@ export function executeStart(
         message,
         process: proc,
       },
-      terminate: !shouldContinue,
     };
   } catch (error) {
     const message =

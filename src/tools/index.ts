@@ -40,12 +40,6 @@ const ProcessesParams = Type.Object({
         "Force-kill the process with SIGKILL for kill action. Use after a normal terminate times out, or when you need an immediate hard stop.",
     }),
   ),
-  continueAfterStart: Type.Optional(
-    Type.Boolean({
-      description:
-        "For start only. Leave unset/false when the next step is to wait for process completion; process start will end this agent turn and the extension will resume you on exit. Set true only when there is immediate, specific, non-polling work to do when there is immediate, specific, non-polling work to do after starting.",
-    }),
-  ),
 });
 
 export function setupProcessesTools(pi: ExtensionAPI, manager: ProcessManager) {
@@ -58,22 +52,15 @@ Actions: start, list, output, logs, kill, clear.
 - start requires 'name' and 'command'
 - output/logs/kill require 'id' (exact process ID or exact friendly name)
 - kill supports optional 'force=true' for SIGKILL
-- start supports optional 'continueAfterStart=true' only when there is immediate non-polling work to do
 
-Important behavior:
-- By default, 'start' ends the current agent turn. If the next step is waiting, call 'start' by itself and wait for the automatic process-end notification instead of calling 'list', 'output', or 'logs' repeatedly.
-- Set 'continueAfterStart=true' only when there is specific useful work to do immediately after starting the process; do not poll.
-- This tool is event-driven: the agent is notified automatically when a process exits, fails, or is externally killed.
-- Tool-triggered kills never notify.
-- Use 'output' or 'logs' only on demand: when the user asks, when you need a one-off diagnostic snapshot, or when investigating a problem.
-
-Preferred pattern: start the process once, let the turn stop, and resume from the automatic notification instead of polling.`,
+This tool is event-driven: the agent is notified automatically when a process exits, fails, or is externally killed.
+Tool-triggered kills never notify.
+Use 'output' or 'logs' only on demand: when the user asks, when you need a one-off diagnostic snapshot, or when investigating a problem.`,
     promptSnippet:
       "Start and manage background processes without blocking the conversation; process start waits for notifications by default",
     promptGuidelines: [
       "Use the process tool instead of bash for dev servers, watch mode, log tails, port-forwards, or commands that should keep running.",
-      "After process start, do not call process list/output/logs just to wait. If the next step is waiting, call process start by itself; by default it ends the turn and the extension will resume the agent when the process exits.",
-      "Set process continueAfterStart=true only when there is immediate, specific, non-polling work to do after start.",
+      "After process start, the agent continues its turn — use process output/logs to check status if needed.",
       "Use process output or process logs only for a one-off inspection, explicit user request, or debugging.",
     ],
 
