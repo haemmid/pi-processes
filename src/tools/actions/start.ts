@@ -47,7 +47,7 @@ export function executeStart(
         content: [
           {
             type: "text",
-            text: `A process named "${params.name}" is already running. Use process kill first, or restart=true to replace it.`,
+            text: `A process named "${params.name}" is already running. Use process kill first, or process restart to replace it.`,
           },
         ],
         details: {

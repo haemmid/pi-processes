@@ -5,7 +5,7 @@ Run through all steps without waiting for confirmation. Keep messages short.
 1. Start `./test/test-output.sh` as a background process named `stream`.
 2. Try to start another process with the same name: `process start "./test/test-output.sh" name="stream"`.
 3. Verify that it returns an error about the process already running.
-4. Start a process with `restart=true`: `process start "./test/test-output.sh" name="stream" restart=true`.
+4. Restart the process using the `restart` action: `process restart "./test/test-output.sh" name="stream"`.
 5. Verify that the new process started with a different id.
 
 ## Normal operations
