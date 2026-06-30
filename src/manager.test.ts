@@ -190,16 +190,4 @@ describe("ProcessManager", () => {
     expect(second).toBeNull();
     expect(manager.resolve("server")).toEqual({ ok: true, info: first });
   });
-
-  it("restarts a process when restart option is true", () => {
-    const first = manager.start("server", "pnpm dev", process.cwd());
-    if (!first) throw new Error("start should not return null");
-    const second = manager.start("server", "pnpm dev", process.cwd(), {
-      restart: true,
-    });
-    if (!second) throw new Error("start with restart should not return null");
-
-    expect(second.id).not.toBe(first.id);
-    expect(manager.resolve("server")).toEqual({ ok: true, info: second });
-  });
 });

@@ -7,7 +7,6 @@ interface StartParams {
   name?: string;
   command?: string;
   cwd?: string;
-  restart?: boolean;
 }
 
 export function executeStart(
@@ -41,7 +40,6 @@ export function executeStart(
       params.name,
       params.command,
       params.cwd ?? ctx.cwd,
-      params.restart ? { restart: true } : undefined,
     );
 
     if (proc === null) {

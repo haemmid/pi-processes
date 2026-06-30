@@ -13,25 +13,26 @@ const ProcessesParams = Type.Object({
       Type.Literal("logs"),
       Type.Literal("kill"),
       Type.Literal("clear"),
+      Type.Literal("restart"),
     ],
     {
       description:
-        "Action: start (run command), list (show all), output (get recent output), logs (get log file paths), kill (terminate or force-kill), clear (remove finished)",
+        "Action: start (run command), list (show all), output (get recent output), logs (get log file paths), kill (terminate or force-kill), clear (remove finished), restart (kill existing and start new)",
     },
   ),
   command: Type.Optional(
-    Type.String({ description: "Command to run (required for start)" }),
+    Type.String({ description: "Command to run (required for start/restart)" }),
   ),
   name: Type.Optional(
     Type.String({
       description:
-        "Friendly name for the process (required for start, e.g. 'backend-dev', 'test-runner')",
+        "Friendly name for the process (required for start/restart, e.g. 'backend-dev', 'test-runner')",
     }),
   ),
   cwd: Type.Optional(
     Type.String({
       description:
-        "Working directory for the command (for start action). Defaults to the session working directory. Prefer this over 'cd dir && command' shell wrappers.",
+        "Working directory for the command (for start/restart action). Defaults to the session working directory. Prefer this over 'cd dir && command' shell wrappers.",
     }),
   ),
   id: Type.Optional(
@@ -46,12 +47,6 @@ const ProcessesParams = Type.Object({
         "Force-kill the process with SIGKILL for kill action. Use after a normal terminate times out, or when you need an immediate hard stop.",
     }),
   ),
-  restart: Type.Optional(
-    Type.Boolean({
-      description:
-        "For start only. Kill any existing process with the same name and start a new one.",
-    }),
-  ),
 });
 
 export function setupProcessesTools(pi: ExtensionAPI, manager: ProcessManager) {
@@ -60,11 +55,11 @@ export function setupProcessesTools(pi: ExtensionAPI, manager: ProcessManager) {
     label: "Process",
     description: `Manage background processes.
 
-Actions: start, list, output, logs, kill, clear.
-- start requires 'name' and 'command' — will refuse if a process with the same name is already running
+Actions: start, list, output, logs, kill, clear, restart.
+- start/restart require 'name' and 'command' — restart kills existing process first
 - output/logs/kill require 'id' (exact process ID or exact friendly name)
 - kill supports optional 'force=true' for SIGKILL
-- start supports optional 'restart=true' to replace an existing process with the same name
+- restart is preferred over start+kill: it safely awaits kill before starting new process
 
 This tool is event-driven: the agent is notified automatically when a process exits, fails, or is externally killed.
 Tool-triggered kills never notify.
@@ -75,7 +70,7 @@ Use 'output' or 'logs' only on demand: when the user asks, when you need a one-o
       "Use the process tool instead of bash for dev servers, watch mode, log tails, port-forwards, or commands that should keep running.",
       "After process start, the agent continues its turn — use process output/logs to check status if needed.",
       "Use process output or process logs only for a one-off inspection, explicit user request, or debugging.",
-      "If start fails because a process with the same name is already running, use restart=true to replace it.",
+      "Use process restart to replace an existing process — it safely awaits kill before starting the new one.",
     ],
 
     parameters: ProcessesParams,

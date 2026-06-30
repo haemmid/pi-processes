@@ -6,6 +6,7 @@ import { executeKill } from "./kill";
 import { executeList } from "./list";
 import { executeLogs } from "./logs";
 import { executeOutput } from "./output";
+import { executeRestart } from "./restart";
 import { executeStart } from "./start";
 
 interface ActionParams {
@@ -15,7 +16,6 @@ interface ActionParams {
   cwd?: string;
   id?: string;
   force?: boolean;
-  restart?: boolean;
 }
 
 export async function executeAction(
@@ -26,6 +26,8 @@ export async function executeAction(
   switch (params.action) {
     case "start":
       return executeStart(params, manager, ctx);
+    case "restart":
+      return executeRestart(params, manager, ctx);
     case "list":
       return executeList(manager);
     case "output":

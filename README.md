@@ -104,6 +104,7 @@ The tool is named `process`.
 | Action | Description |
 |--------|-------------|
 | `start` | Start a managed process. |
+| `restart` | Kill existing process and start a new one (safe: await kill → start). |
 | `list` | List managed processes. |
 | `output` | Return a one-off tailed stdout/stderr snapshot. |
 | `logs` | Return file paths for stdout, stderr, and combined logs. |
@@ -116,7 +117,8 @@ The tool is named `process`.
 process start "pnpm dev" name="backend-dev"
 process start "pnpm test --watch" name="tests"
 process start "pnpm dev" name="backend-dev" cwd="/path/to/project"
-process start "pnpm dev" name="backend-dev" restart=true
+process restart "pnpm dev" name="backend-dev"
+process restart "pnpm dev" name="backend-dev" force=true
 process list
 process output id="backend-dev"
 process logs id="proc_1"
@@ -127,12 +129,13 @@ process clear
 
 ### Field rules
 
-- `start` requires `command` and `name`.
+- `start`/`restart` require `command` and `name`.
 - `output`, `logs`, and `kill` require `id`.
 - `kill` accepts `force=true` to send `SIGKILL` instead of `SIGTERM`.
 - `start` refuses if a process with the same name is already running.
-- `start` accepts `restart=true` to kill any existing process with the same name and start a new one.
-- `start` accepts `cwd` to override the working directory (defaults to session cwd).
+- `restart` safely kills the existing process (awaited) before starting a new one.
+- `restart` accepts `force=true` to send `SIGKILL` instead of `SIGTERM`.
+- `start`/`restart` accept `cwd` to override the working directory (defaults to session cwd).
 
 ## Killing processes
 

@@ -24,10 +24,6 @@ interface ProcessManagerOptions {
   getConfiguredShellPath?: () => string | undefined;
 }
 
-interface StartOptions {
-  restart?: boolean;
-}
-
 export class ProcessManager {
   private processes: Map<string, ManagedProcess> = new Map();
   private counter = 0;
@@ -118,12 +114,7 @@ export class ProcessManager {
     }
   }
 
-  start(
-    name: string,
-    command: string,
-    cwd: string,
-    opts?: StartOptions,
-  ): ProcessInfo | null {
+  start(name: string, command: string, cwd: string): ProcessInfo | null {
     const id = `proc_${++this.counter}`;
     const stdoutFile = join(this.logDir, `${id}-stdout.log`);
     const stderrFile = join(this.logDir, `${id}-stderr.log`);
@@ -165,14 +156,7 @@ export class ProcessManager {
     }
 
     if (existing) {
-      if (opts?.restart) {
-        // Kill the existing process and replace it
-        this.kill(existing.id, { signal: "SIGTERM", timeoutMs: 3000 });
-        // Wait a tick for the transition to complete
-        this.processes.delete(existing.id);
-      } else {
-        return null; // Signal caller that process already exists
-      }
+      return null; // Signal caller that process already exists
     }
 
     this.processes.set(id, managed);
