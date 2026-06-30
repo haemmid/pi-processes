@@ -1,14 +1,24 @@
 {
   "name": "@haemmid/pi-processes",
   "version": "0.9.0",
+  "description": "Agent-facing background process manager for Pi and pi-web automation workflows.",
   "license": "MIT",
   "type": "module",
   "private": false,
+  "homepage": "https://github.com/haemmid/pi-processes#readme",
+  "bugs": {
+    "url": "https://github.com/haemmid/pi-processes/issues"
+  },
   "keywords": [
     "pi-package",
     "pi-extension",
     "pi",
-    "processes"
+    "pi-web",
+    "processes",
+    "background-processes",
+    "dev-server",
+    "astro",
+    "vite"
   ],
   "repository": {
     "type": "git",

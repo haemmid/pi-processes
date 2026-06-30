@@ -1,15 +1,31 @@
 # ⚙️ pi-processes
 
-> Manage long-running commands from Pi without blocking the conversation.
-> Designed for use with [jmfederico/pi-web](https://github.com/jmfederico/pi-web).
+> Agent-facing process manager for Pi and pi-web automation workflows.
+
+`pi-processes` lets the agent start, inspect, restart, and stop long-running commands through a managed `process` tool instead of fragile shell backgrounding.
+
+Designed for use with [jmfederico/pi-web](https://github.com/jmfederico/pi-web).
 
 [![npm](https://img.shields.io/npm/v/@haemmid/pi-processes)](https://www.npmjs.com/package/@haemmid/pi-processes)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
 
-This is a fork of [mjakl/pi-processes](https://github.com/mjakl/pi-processes), which is itself a fork of [aliou/pi-processes](https://github.com/aliou/pi-processes).
+## Why
 
-**Goal of this fork:** strip everything unnecessary for an automated workflow where the agent manages dev servers. No TUI, no `/ps` overlay, no status widgets — just the core process tool and session cleanup.
+Agents often waste time or break sessions by running:
+
+- `npm run dev &`
+- `nohup pnpm dev ...`
+- `pkill -f vite`
+- repeated `timeout 10 npm run dev`
+
+This package gives the agent a stable process lifecycle instead:
+
+- `process start`
+- `process list`
+- `process output`
+- `process restart`
+- `process kill`
 
 ## Table of Contents
 
@@ -19,7 +35,9 @@ This is a fork of [mjakl/pi-processes](https://github.com/mjakl/pi-processes), w
 - [Configuration](#configuration)
 - [Tool API](#tool-api)
 - [Killing processes](#killing-processes)
+- [Limitations](#limitations)
 - [Development](#development)
+- [Acknowledgements](#acknowledgements)
 - [License](#license)
 
 ## Features
@@ -28,6 +46,8 @@ This is a fork of [mjakl/pi-processes](https://github.com/mjakl/pi-processes), w
 - **File-backed logs** — process output is preserved in temp files outside the agent context window.
 - **Background-command interception** — optional guardrails steer the agent away from `&`, `nohup`, `&&` and toward the `process` tool.
 - **Session cleanup** — managed processes are terminated when the session shuts down.
+- **Duplicate name protection** — refuses to spawn if a live process with the same name already exists.
+- **Dedicated `restart` action** — safely awaits kill before starting a new process.
 
 ## Install
 
@@ -62,6 +82,28 @@ Stop the backend-dev process.
 ```
 
 The agent should start managed processes through the `process` tool instead of running shell backgrounding such as `command &`, `nohup`, `disown`, or `setsid`.
+
+## Astro / Vite workflow
+
+For Astro/Vite dev servers, ask the agent:
+
+```text
+Use the process tool for the Astro dev server.
+Start `npm run dev -- --host 0.0.0.0` as `my-site:astro`.
+Use `process output` when you need logs.
+Do not restart after ordinary .astro, .ts, or .css edits.
+Restart only after package/config/env changes or if the server exits.
+```
+
+Typical tool flow:
+
+```text
+process list
+process start "npm run dev -- --host 0.0.0.0" name="my-site:astro"
+process output id="my-site:astro"
+process restart "npm run dev -- --host 0.0.0.0" name="my-site:astro"
+process kill id="my-site:astro"
+```
 
 ## Configuration
 
@@ -143,6 +185,14 @@ process clear
 - `process kill id="..." force=true` sends `SIGKILL`.
 - Tool-triggered kills never notify the agent.
 
+## Limitations
+
+- **Linux/macOS only.** The extension disables itself on Windows.
+- **Session-scoped.** Processes are cleaned up on session shutdown.
+- **Not a system service manager.** Does not persist process registry across sessions.
+- **Manages only tool-started processes.** Does not track externally started processes.
+- **No TUI widgets.** Does not provide `/ps` overlays or status widgets.
+
 ## Development
 
 There are no Git hooks installed by this repository. Before committing or opening a PR, consider running:
@@ -158,6 +208,10 @@ After dependency changes, also verify the lockfile with:
 ```bash
 pnpm install --frozen-lockfile --ignore-scripts
 ```
+
+## Acknowledgements
+
+This package started as a fork of [`mjakl/pi-processes`](https://github.com/mjakl/pi-processes), which was based on [`aliou/pi-processes`](https://github.com/aliou/pi-processes). This fork focuses specifically on plain-text, pi-web-friendly, agent-facing process management without TUI widgets or overlays.
 
 ## License
 
