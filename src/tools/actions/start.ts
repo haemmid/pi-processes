@@ -6,6 +6,7 @@ import { formatTimestamp, sanitizeLine } from "../../utils";
 interface StartParams {
   name?: string;
   command?: string;
+  restart?: boolean;
 }
 
 export function executeStart(
@@ -35,7 +36,28 @@ export function executeStart(
   }
 
   try {
-    const proc = manager.start(params.name, params.command, ctx.cwd);
+    const proc = manager.start(
+      params.name,
+      params.command,
+      ctx.cwd,
+      params.restart ? { restart: true } : undefined,
+    );
+
+    if (proc === null) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `A process named "${params.name}" is already running. Use process kill first, or restart=true to replace it.`,
+          },
+        ],
+        details: {
+          action: "start",
+          success: false,
+          message: `A process named "${params.name}" is already running.`,
+        },
+      };
+    }
 
     const startedAt = formatTimestamp(proc.startTime);
     const message = `Started "${sanitizeLine(proc.name)}" (${proc.id}, PID: ${proc.pid})\nStarted at: ${startedAt}\nLogs: ${proc.stdoutFile}`;

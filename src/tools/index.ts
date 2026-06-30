@@ -40,6 +40,12 @@ const ProcessesParams = Type.Object({
         "Force-kill the process with SIGKILL for kill action. Use after a normal terminate times out, or when you need an immediate hard stop.",
     }),
   ),
+  restart: Type.Optional(
+    Type.Boolean({
+      description:
+        "For start only. Kill any existing process with the same name and start a new one.",
+    }),
+  ),
 });
 
 export function setupProcessesTools(pi: ExtensionAPI, manager: ProcessManager) {
@@ -49,9 +55,10 @@ export function setupProcessesTools(pi: ExtensionAPI, manager: ProcessManager) {
     description: `Manage background processes.
 
 Actions: start, list, output, logs, kill, clear.
-- start requires 'name' and 'command'
+- start requires 'name' and 'command' — will refuse if a process with the same name is already running
 - output/logs/kill require 'id' (exact process ID or exact friendly name)
 - kill supports optional 'force=true' for SIGKILL
+- start supports optional 'restart=true' to replace an existing process with the same name
 
 This tool is event-driven: the agent is notified automatically when a process exits, fails, or is externally killed.
 Tool-triggered kills never notify.
@@ -62,6 +69,7 @@ Use 'output' or 'logs' only on demand: when the user asks, when you need a one-o
       "Use the process tool instead of bash for dev servers, watch mode, log tails, port-forwards, or commands that should keep running.",
       "After process start, the agent continues its turn — use process output/logs to check status if needed.",
       "Use process output or process logs only for a one-off inspection, explicit user request, or debugging.",
+      "If start fails because a process with the same name is already running, use restart=true to replace it.",
     ],
 
     parameters: ProcessesParams,

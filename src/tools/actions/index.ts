@@ -14,6 +14,7 @@ interface ActionParams {
   name?: string;
   id?: string;
   force?: boolean;
+  restart?: boolean;
 }
 
 export async function executeAction(

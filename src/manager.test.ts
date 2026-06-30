@@ -53,6 +53,7 @@ describe("ProcessManager", () => {
 
   it("emits process updates for terminate and terminate timeout transitions", async () => {
     const proc = manager.start("server", "pnpm dev", process.cwd());
+    if (!proc) throw new Error("start should not return null");
     const events: string[] = [];
     const unsubscribe = manager.onEvent((event) => {
       events.push(event.type);
@@ -83,6 +84,7 @@ describe("ProcessManager", () => {
 
   it("treats ESRCH during kill as an already-dead process instead of failing", async () => {
     const proc = manager.start("server", "pnpm dev", process.cwd());
+    if (!proc) throw new Error("start should not return null");
     mocks.killProcessGroup.mockImplementationOnce(() => {
       const error = new Error("No such process") as NodeJS.ErrnoException;
       error.code = "ESRCH";
@@ -104,6 +106,7 @@ describe("ProcessManager", () => {
 
   it("suppresses the follow-up agent turn after a tool-triggered kill", async () => {
     const proc = manager.start("server", "pnpm dev", process.cwd());
+    if (!proc) throw new Error("start should not return null");
     const endedEvents: ManagerEvent[] = [];
     const unsubscribe = manager.onEvent((event) => {
       if (event.type === "process_ended") {
@@ -134,6 +137,7 @@ describe("ProcessManager", () => {
 
   it("can notify the agent after a user-initiated kill", async () => {
     const proc = manager.start("server", "pnpm dev", process.cwd());
+    if (!proc) throw new Error("start should not return null");
     const endedEvents: ManagerEvent[] = [];
     const unsubscribe = manager.onEvent((event) => {
       if (event.type === "process_ended") {
@@ -164,17 +168,38 @@ describe("ProcessManager", () => {
   });
 
   it("resolves only exact ids or exact names and reports ambiguity", () => {
-    const first = manager.start("server", "pnpm dev", process.cwd());
-    manager.start("server", "pnpm test --watch", process.cwd());
+    const first = manager.start("first", "pnpm dev", process.cwd());
+    if (!first) throw new Error("start should not return null");
+    const second = manager.start("second", "pnpm test --watch", process.cwd());
+    if (!second) throw new Error("start should not return null");
 
     expect(manager.resolve(first.id)).toEqual({ ok: true, info: first });
-    expect(manager.resolve("server")).toMatchObject({
-      ok: false,
-      reason: "ambiguous",
-    });
+    expect(manager.resolve("first")).toEqual({ ok: true, info: first });
+    expect(manager.resolve("second")).toEqual({ ok: true, info: second });
     expect(manager.resolve("pnpm dev")).toEqual({
       ok: false,
       reason: "not_found",
     });
+  });
+
+  it("rejects duplicate process names", () => {
+    const first = manager.start("server", "pnpm dev", process.cwd());
+    if (!first) throw new Error("start should not return null");
+    const second = manager.start("server", "pnpm dev", process.cwd());
+
+    expect(second).toBeNull();
+    expect(manager.resolve("server")).toEqual({ ok: true, info: first });
+  });
+
+  it("restarts a process when restart option is true", () => {
+    const first = manager.start("server", "pnpm dev", process.cwd());
+    if (!first) throw new Error("start should not return null");
+    const second = manager.start("server", "pnpm dev", process.cwd(), {
+      restart: true,
+    });
+    if (!second) throw new Error("start with restart should not return null");
+
+    expect(second.id).not.toBe(first.id);
+    expect(manager.resolve("server")).toEqual({ ok: true, info: second });
   });
 });

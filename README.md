@@ -1,10 +1,25 @@
-# pi-processes (fork)
+# ⚙️ pi-processes
 
-**Manage long-running commands from Pi without blocking the conversation.**
+> Manage long-running commands from Pi without blocking the conversation.
+
+[![npm](https://img.shields.io/npm/v/@haemmid/pi-processes)](https://www.npmjs.com/package/@haemmid/pi-processes)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
 
 This is a fork of [mjakl/pi-processes](https://github.com/mjakl/pi-processes), which is itself a fork of [aliou/pi-processes](https://github.com/aliou/pi-processes).
 
 **Goal of this fork:** strip everything unnecessary for an automated workflow where the agent manages dev servers. No TUI, no `/ps` overlay, no status widgets — just the core process tool and session cleanup.
+
+## Table of Contents
+
+- [Features](#features)
+- [Install](#install)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Tool API](#tool-api)
+- [Killing processes](#killing-processes)
+- [Development](#development)
+- [License](#license)
 
 ## Features
 
@@ -33,7 +48,7 @@ Or install from a local checkout:
 pi install /path/to/pi-processes
 ```
 
-## Using Pi Processes
+## Usage
 
 The `process` tool is for the agent, not for direct user input. Ask the agent to start or inspect long-running work.
 
@@ -83,20 +98,23 @@ Options:
 
 The tool is named `process`.
 
-Actions:
+### Actions
 
-- `start` — start a managed process.
-- `list` — list managed processes.
-- `output` — return a one-off tailed stdout/stderr snapshot.
-- `logs` — return file paths for stdout, stderr, and combined logs.
-- `kill` — terminate or force-kill a process.
-- `clear` — remove finished processes from the manager.
+| Action | Description |
+|--------|-------------|
+| `start` | Start a managed process. |
+| `list` | List managed processes. |
+| `output` | Return a one-off tailed stdout/stderr snapshot. |
+| `logs` | Return file paths for stdout, stderr, and combined logs. |
+| `kill` | Terminate or force-kill a process. |
+| `clear` | Remove finished processes from the manager. |
 
-Tool-call examples:
+### Tool-call examples
 
 ```text
 process start "pnpm dev" name="backend-dev"
 process start "pnpm test --watch" name="tests"
+process start "pnpm dev" name="backend-dev" restart=true
 process list
 process output id="backend-dev"
 process logs id="proc_1"
@@ -105,11 +123,13 @@ process kill id="proc_1" force=true
 process clear
 ```
 
-Field rules:
+### Field rules
 
 - `start` requires `command` and `name`.
 - `output`, `logs`, and `kill` require `id`.
 - `kill` accepts `force=true` to send `SIGKILL` instead of `SIGTERM`.
+- `start` refuses if a process with the same name is already running.
+- `start` accepts `restart=true` to kill any existing process with the same name and start a new one.
 
 ## Killing processes
 
