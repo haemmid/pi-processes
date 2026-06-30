@@ -25,14 +25,14 @@
   "files": [
     "src",
     "!src/**/*.test.ts",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "dependencies": {
     "@aliou/sh": "^0.1.0"
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",
-    "@earendil-works/pi-tui": "*",
     "typebox": "*"
   },
   "devDependencies": {

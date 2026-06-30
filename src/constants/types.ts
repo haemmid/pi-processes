@@ -1,6 +1,3 @@
-// Custom message type for process update notifications
-export const MESSAGE_TYPE_PROCESS_UPDATE = "pi-processes:update";
-
 export type ProcessStatus =
   | "running"
   | "terminating"
@@ -56,10 +53,4 @@ export interface ProcessesDetails {
 export interface ExecuteResult {
   content: Array<{ type: "text"; text: string }>;
   details: ProcessesDetails;
-  /**
-   * Hint to Pi's agent loop to stop after this tool batch. Used by process
-   * start so the model actually waits for the lifecycle notification instead
-   * of immediately continuing into list/output polling.
-   */
-  terminate?: boolean;
 }

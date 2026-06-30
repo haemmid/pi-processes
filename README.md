@@ -1,8 +1,7 @@
 # ⚙️ pi-processes
 
 > Manage long-running commands from Pi without blocking the conversation.
-
-Designed for use with [jmfederico/pi-web](https://github.com/jmfederico/pi-web).
+> Designed for use with [jmfederico/pi-web](https://github.com/jmfederico/pi-web).
 
 [![npm](https://img.shields.io/npm/v/@haemmid/pi-processes)](https://www.npmjs.com/package/@haemmid/pi-processes)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
