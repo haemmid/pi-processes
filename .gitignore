@@ -37,3 +37,4 @@ result-*
 .pi/
 .agents/plans/*.md
 /.tickets/
+.tickets/
