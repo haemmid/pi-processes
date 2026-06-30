@@ -64,7 +64,7 @@ Actions: start, list, output, logs, kill, clear, restart.
 Processes continue in the background. Use process output or process logs for a one-off snapshot when you need to inspect status. Do not poll repeatedly just to wait.
 Tool-triggered kills never notify.`,
     promptSnippet:
-      "Start and manage background processes without blocking the conversation; process start waits for notifications by default",
+      "Start and manage long-running processes without blocking the conversation; use process output/logs for one-off status snapshots.",
     promptGuidelines: [
       "Use the process tool instead of bash for dev servers, watch mode, log tails, port-forwards, or commands that should keep running.",
       "After process start, the agent continues its turn — use process output/logs to check status if needed.",

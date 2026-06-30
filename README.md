@@ -49,7 +49,7 @@ This package gives the agent a stable process lifecycle instead:
 
 - **Agent-facing `process` tool** — start, list, kill, get output, get log paths, and clear managed processes.
 - **File-backed logs** — process output is preserved in temp files outside the agent context window.
-- **Background-command interception** — optional guardrails steer the agent away from `&`, `nohup`, `&&` and toward the `process` tool.
+- **Background-command interception** — optional guardrails steer the agent away from shell backgrounding, `nohup`, and obvious long-running foreground commands, and toward the `process` tool.
 - **Session cleanup** — managed processes are terminated when the session shuts down.
 - **Duplicate name protection** — refuses to spawn if a live process with the same name already exists.
 - **Dedicated `restart` action** — safely awaits kill before starting a new process.

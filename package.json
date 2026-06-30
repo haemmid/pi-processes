@@ -22,7 +22,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/haemmid/pi-processes"
+    "url": "git+https://github.com/haemmid/pi-processes.git"
   },
   "pi": {
     "extensions": [
