@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">@haemmid/pi-processes workflow</title>
+  <desc id="desc">Minimal technical diagram: Pi Agent starts a process tool, which manages an Astro or Vite dev server, captures logs and output, and speeds up pi-web automation.</desc>
+
+  <defs>
+    <style>
+      .bg { fill: #f5f5f2; }
+      .halo { fill: #f0f1ee; opacity: .58; }
+      .grid { fill: none; stroke: #c9ccc5; stroke-width: 1; opacity: .45; }
+      .shell, .card { fill: #ffffff; stroke: #c9ccc5; stroke-width: 1.2; }
+      .soft, .chip { fill: #f0f1ee; stroke: #c9ccc5; stroke-width: 1.1; }
+      .arrow { fill: none; stroke: #586f61; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .arrow2 { fill: none; stroke: #8f9891; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow2); }
+      .stroke { fill: none; stroke: #8f9891; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+      .stroke-soft { fill: none; stroke: #c9ccc5; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+      .dot-muted { fill: #8f9891; }
+      .dot-ok { fill: #62806c; }
+      .bolt { fill: #918156; }
+      .title-text { font: 650 22px/1.1 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: -0.03em; fill: #202427; }
+      .label { font: 520 14px/1.2 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #6f7772; }
+      .tiny { font: 650 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .055em; fill: #6f7772; text-transform: uppercase; }
+      .mono { font: 520 14px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #202427; }
+      .mono2 { font: 500 13px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #6f7772; }
+      .arrow-head { fill: #586f61; }
+      .arrow-head2 { fill: #8f9891; }
+      .accent-stroke { stroke: #586f61; }
+      .accent-dot { fill: #586f61; }
+      .accent-dot2 { fill: #7f9488; }
+
+      @media (prefers-color-scheme: dark) {
+        .bg { fill: #121416; }
+        .halo { fill: #202529; opacity: .58; }
+        .grid { stroke: #353b3b; opacity: .55; }
+        .shell, .card { fill: #191d20; stroke: #353b3b; }
+        .soft, .chip { fill: #202529; stroke: #353b3b; }
+        .arrow { stroke: #a9c8b5; }
+        .arrow2, .stroke { stroke: #6e7872; }
+        .stroke-soft { stroke: #353b3b; }
+        .dot-muted { fill: #6e7872; }
+        .dot-ok { fill: #9bc5ad; }
+        .bolt { fill: #d2c088; }
+        .title-text, .mono { fill: #edf0ed; }
+        .label, .tiny, .mono2 { fill: #a5ada8; }
+        .arrow-head { fill: #a9c8b5; }
+        .arrow-head2 { fill: #6e7872; }
+        .accent-stroke { stroke: #a9c8b5; }
+        .accent-dot { fill: #a9c8b5; }
+        .accent-dot2 { fill: #86a090; }
+      }
+    </style>
+
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" class="grid"/>
+    </pattern>
+
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 10 5 0 10z" class="arrow-head"/>
+    </marker>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="8.6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 10 5 0 10z" class="arrow-head2"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="630" class="bg"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <circle cx="600" cy="315" r="260" class="halo"/>
+  <path d="M140 488C280 416 372 505 516 447C676 383 719 214 858 216C982 218 1038 325 1091 278" class="stroke-soft" opacity=".65"/>
+
+  <rect x="70" y="64" width="1060" height="502" rx="36" class="shell"/>
+  <rect x="96" y="92" width="1008" height="48" rx="18" class="soft"/>
+  <circle cx="124" cy="116" r="6" class="dot-muted" opacity=".6"/>
+  <circle cx="146" cy="116" r="6" class="dot-muted" opacity=".38"/>
+  <circle cx="168" cy="116" r="6" class="dot-muted" opacity=".25"/>
+  <text x="198" y="121" class="tiny">@haemmid/pi-processes</text>
+  <rect x="930" y="105" width="140" height="22" rx="11" class="chip"/>
+  <text x="953" y="120" class="tiny">managed runs</text>
+
+  <g transform="translate(96 176)">
+    <rect width="260" height="190" rx="24" class="card"/>
+    <rect x="22" y="22" width="216" height="48" rx="14" class="soft"/>
+    <path d="M45 47l13 12-13 12M72 69h43" class="stroke"/>
+    <text x="22" y="106" class="title-text">Pi Agent</text>
+    <text x="22" y="132" class="label">asks for a dev process</text>
+    <rect x="22" y="150" width="92" height="20" rx="10" class="chip"/>
+    <text x="39" y="164" class="tiny">start</text>
+    <rect x="124" y="150" width="92" height="20" rx="10" class="chip"/>
+    <text x="145" y="164" class="tiny">status</text>
+  </g>
+
+  <g transform="translate(468 166)">
+    <rect width="264" height="210" rx="28" class="card"/>
+    <circle cx="132" cy="73" r="40" class="soft"/>
+    <path d="M132 43v12M132 91v12M102 73h12M150 73h12M111 52l9 9M144 85l9 9M153 52l-9 9M120 85l-9 9" class="stroke"/>
+    <circle cx="132" cy="73" r="14" fill="none" class="accent-stroke" stroke-width="3"/>
+    <text x="36" y="136" class="title-text">process tool</text>
+    <text x="36" y="162" class="label">dedupe • resolve • stop</text>
+    <rect x="36" y="178" width="82" height="20" rx="10" class="chip"/>
+    <text x="55" y="192" class="tiny">pid</text>
+    <rect x="128" y="178" width="100" height="20" rx="10" class="chip"/>
+    <text x="148" y="192" class="tiny">logs</text>
+  </g>
+
+  <g transform="translate(844 176)">
+    <rect width="260" height="190" rx="24" class="card"/>
+    <text x="28" y="-14" class="title-text">managed dev server</text>
+    <rect x="28" y="28" width="204" height="36" rx="12" class="soft"/>
+    <rect x="28" y="76" width="204" height="36" rx="12" class="soft"/>
+    <rect x="28" y="124" width="204" height="36" rx="12" class="soft"/>
+    <circle cx="50" cy="46" r="5" class="dot-ok"/>
+    <circle cx="50" cy="94" r="5" class="dot-ok"/>
+    <circle cx="50" cy="142" r="5" class="dot-ok"/>
+    <path d="M72 46h104M72 94h126M72 142h78" class="stroke-soft"/>
+    <text x="28" y="186" class="label">Astro / Vite, kept under control</text>
+  </g>
+
+  <path d="M368 271C404 271 421 271 456 271" class="arrow"/>
+  <path d="M746 271C785 271 800 271 832 271" class="arrow"/>
+
+  <g transform="translate(390 420)">
+    <rect width="420" height="94" rx="22" class="card"/>
+    <text x="26" y="34" class="mono">stdout.log</text>
+    <text x="26" y="62" class="mono2">ready in 312ms • localhost:5173</text>
+    <text x="26" y="82" class="mono2">[managed] reused existing process</text>
+    <path d="M324 31h58M324 53h42M324 75h70" class="stroke-soft"/>
+  </g>
+  <path d="M600 388C600 404 600 410 600 418" class="arrow2"/>
+
+  <g transform="translate(842 423)">
+    <rect width="241" height="91" rx="22" class="card"/>
+    <circle cx="48" cy="46" r="25" class="soft"/>
+    <path d="M51 23 35 50h18l-5 20 22-33H52z" class="bolt"/>
+    <text x="88" y="40" class="title-text">faster pi-web</text>
+    <text x="88" y="66" class="label">automation loop</text>
+  </g>
+  <path d="M812 467C822 467 829 467 840 467" class="arrow2"/>
+
+  <circle cx="748" cy="232" r="5" class="accent-dot" opacity=".55"/>
+  <circle cx="457" cy="304" r="4" class="accent-dot2" opacity=".55"/>
+  <circle cx="600" cy="395" r="4" class="dot-muted" opacity=".45"/>
+
+</svg>

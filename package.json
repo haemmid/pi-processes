@@ -37,7 +37,8 @@
     "!src/**/*.test.ts",
     "README.md",
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    "assets"
   ],
   "dependencies": {
     "@aliou/sh": "^0.1.0"
