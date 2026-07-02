@@ -215,6 +215,43 @@ describe("ProcessManager", () => {
     expect(manager.resolve(second.id)).toEqual({ ok: true, info: second });
   });
 
+  it("ensure reuses existing process when name+command+cwd match", () => {
+    const first = manager.start("server", "pnpm dev", process.cwd());
+    if (!first) throw new Error("start should not return null");
+
+    const reused = manager.ensure("server", "pnpm dev", process.cwd());
+
+    expect(reused).not.toBeNull();
+    if (reused) {
+      expect(reused.id).toBe(first.id);
+    }
+  });
+
+  it("ensure returns null when name matches but command differs", () => {
+    manager.start("server", "pnpm dev", process.cwd());
+
+    const result = manager.ensure("server", "pnpm build", process.cwd());
+
+    expect(result).toBeNull();
+  });
+
+  it("ensure returns null when name matches but cwd differs", () => {
+    manager.start("server", "pnpm dev", process.cwd());
+
+    const result = manager.ensure("server", "pnpm dev", "/other/path");
+
+    expect(result).toBeNull();
+  });
+
+  it("ensure starts new process when no live process with name exists", () => {
+    const result = manager.ensure("new-server", "pnpm dev", process.cwd());
+
+    expect(result).not.toBeNull();
+    if (result) {
+      expect(result.name).toBe("new-server");
+    }
+  });
+
   it("reports ambiguity when multiple live processes share a name", () => {
     const first = manager.start("server", "pnpm dev", process.cwd());
     if (!first) throw new Error("start should not return null");

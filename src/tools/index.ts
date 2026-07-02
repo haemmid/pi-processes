@@ -8,6 +8,7 @@ const ProcessesParams = Type.Object({
   action: Type.Union(
     [
       Type.Literal("start"),
+      Type.Literal("ensure"),
       Type.Literal("list"),
       Type.Literal("output"),
       Type.Literal("logs"),
@@ -17,7 +18,7 @@ const ProcessesParams = Type.Object({
     ],
     {
       description:
-        "Action: start (run command), list (show all), output (get recent output), logs (get log file paths), kill (terminate or force-kill), clear (remove finished), restart (kill existing and start new)",
+        "Action: start (run command), ensure (idempotent start), list (show all), output (get recent output), logs (get log file paths), kill (terminate or force-kill), clear (remove finished), restart (kill existing and start new)",
     },
   ),
   command: Type.Optional(
@@ -55,8 +56,9 @@ export function setupProcessesTools(pi: ExtensionAPI, manager: ProcessManager) {
     label: "Process",
     description: `Manage background processes.
 
-Actions: start, list, output, logs, kill, clear, restart.
-- start/restart require 'name' and 'command' — restart kills existing process first
+Actions: start, ensure, list, output, logs, kill, clear, restart.
+- start/restart/ensure require 'name' and 'command'
+- ensure is an idempotent start: reuses existing process if name+command+cwd match
 - output/logs/kill accept either 'id' (exact process ID) or 'name' (process name)
 - kill supports optional 'force=true' for SIGKILL
 - restart is preferred over start+kill: it safely awaits kill before starting new process

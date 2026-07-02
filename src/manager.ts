@@ -235,6 +235,34 @@ export class ProcessManager {
     return this.toProcessInfo(managed);
   }
 
+  /**
+   * Ensure a process is running with the given name, command, and cwd.
+   *
+   * - If a live process with the same name + cwd exists → return it.
+   * - If a live process with the same name exists but different cwd/command →
+   *   return null (conflict).
+   * - If no live process with this name exists → start a new one.
+   * - Finished processes with the same name are ignored.
+   */
+  ensure(name: string, command: string, cwd: string): ProcessInfo | null {
+    // Find live process with this name
+    const liveMatch = Array.from(this.processes.values()).find(
+      (proc) => proc.name === name && LIVE_STATUSES.has(proc.status),
+    );
+
+    if (liveMatch) {
+      // Same name, same cwd → reuse
+      if (liveMatch.cwd === cwd && liveMatch.command === command) {
+        return this.toProcessInfo(liveMatch);
+      }
+      // Same name, different cwd/command → conflict
+      return null;
+    }
+
+    // No live match → start new
+    return this.start(name, command, cwd);
+  }
+
   list(): ProcessInfo[] {
     return Array.from(this.processes.values())
       .map((p) => this.toProcessInfo(p))

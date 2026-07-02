@@ -2,6 +2,7 @@ import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import type { ExecuteResult } from "../../constants";
 import type { ProcessManager } from "../../manager";
 import { executeClear } from "./clear";
+import { executeEnsure } from "./ensure";
 import { executeKill } from "./kill";
 import { executeList } from "./list";
 import { executeLogs } from "./logs";
@@ -26,6 +27,8 @@ export async function executeAction(
   switch (params.action) {
     case "start":
       return executeStart(params, manager, ctx);
+    case "ensure":
+      return executeEnsure(params, manager, ctx);
     case "restart":
       return executeRestart(params, manager, ctx);
     case "list":
