@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning for public releases.
 
+## [0.9.1] - 2026-07-02
+
+### Added
+
+- `output`, `logs`, and `kill` accept either `id` or `name` as process selector.
+- `start` and `restart` return suggested next commands with `name="..."`.
+- Shared `resolveSelector` utility for consistent validation across actions.
+
+### Changed
+
+- Ambiguous name resolution now uses simpler error messages.
+- Tool description updated to mention id/name duality.
+
+### Fixed
+
+- `kill` test: message assertion updated for new ambiguous error format.
+
 ## [0.9.0] - 2026-07-01
 
 Initial public release of `@haemmid/pi-processes`.

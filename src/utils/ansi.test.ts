@@ -10,7 +10,7 @@ describe("stripAnsi", () => {
     expect(stripAnsi("\u001b]0;title\u0007hello")).toBe("hello");
   });
 
-  it("strips carriage returns and other control chars that can corrupt TUI rendering", () => {
+  it("strips carriage returns and other control chars that can corrupt output", () => {
     const output = stripAnsi("step 1\rstep 2\b\b done");
     expect(output).toBe("step 1step 2 done");
     for (const char of output) {

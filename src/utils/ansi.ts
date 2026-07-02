@@ -41,7 +41,7 @@ export function stripAnsi(str: string): string {
   }
 
   // Strip terminal control chars like carriage return/backspace that can
-  // corrupt TUI layout when rendered back into pi.
+  // corrupt output formatting.
   return Array.from(clean)
     .filter((char) => {
       const code = char.codePointAt(0) ?? 0;
@@ -55,12 +55,11 @@ export function stripAnsi(str: string): string {
 }
 
 /**
- * Sanitize process output for single-line TUI rendering.
+ * Sanitize process output for single-line display.
  *
- * This is stricter than stripAnsi(): after terminal escapes are removed, any
- * remaining control bytes (carriage returns, backspaces, BEL, embedded
- * newlines, etc.) are dropped so process output cannot move the cursor or
- * alter Pi's surrounding TUI.
+ * After terminal escapes are removed, any remaining control bytes
+ * (carriage returns, backspaces, BEL, embedded newlines, etc.) are dropped
+ * so process output is safe for agent display.
  */
 export function sanitizeLine(str: string): string {
   return stripAnsi(str).replace(/\t/g, "  ");
