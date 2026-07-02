@@ -3,6 +3,7 @@ import type { ExecuteResult } from "../../constants";
 import type { ProcessManager } from "../../manager";
 import { formatTimestamp, sanitizeLine } from "../../utils";
 import { executeKill } from "./kill";
+import { buildNextCommands } from "./utils";
 
 interface RestartParams {
   name?: string;
@@ -100,7 +101,12 @@ export async function executeRestart(
   }
 
   const startedAt = formatTimestamp(proc.startTime);
-  const message = `Restarted "${sanitizeLine(proc.name)}" (${proc.id}, PID: ${proc.pid})\nStarted at: ${startedAt}\nLogs: ${proc.stdoutFile}`;
+  const message = [
+    `Restarted "${sanitizeLine(proc.name)}" (${proc.id}, PID: ${proc.pid})`,
+    `Started at: ${startedAt}`,
+    `Logs: ${proc.stdoutFile}`,
+    buildNextCommands(proc.name),
+  ].join("\n");
   return {
     content: [{ type: "text", text: message }],
     details: {

@@ -26,7 +26,7 @@ const ProcessesParams = Type.Object({
   name: Type.Optional(
     Type.String({
       description:
-        "Friendly name for the process (required for start/restart, e.g. 'backend-dev', 'test-runner')",
+        "Friendly name for the process (required for start/restart; accepted for output/logs/kill as alternative to id)",
     }),
   ),
   cwd: Type.Optional(
@@ -38,7 +38,7 @@ const ProcessesParams = Type.Object({
   id: Type.Optional(
     Type.String({
       description:
-        "Exact process ID or exact friendly name to match (required for output/kill/logs).",
+        "Exact process ID (e.g. 'proc_1') or process name (for output/logs/kill as alternative to name)",
     }),
   ),
   force: Type.Optional(
@@ -57,9 +57,12 @@ export function setupProcessesTools(pi: ExtensionAPI, manager: ProcessManager) {
 
 Actions: start, list, output, logs, kill, clear, restart.
 - start/restart require 'name' and 'command' — restart kills existing process first
-- output/logs/kill require 'id' (exact process ID or exact friendly name)
+- output/logs/kill accept either 'id' (exact process ID) or 'name' (process name)
 - kill supports optional 'force=true' for SIGKILL
 - restart is preferred over start+kill: it safely awaits kill before starting new process
+
+Processes have both an exact process id (e.g. proc_1) and a stable name (e.g. astro-dev).
+For output/logs/kill, prefer name="..." when referring to a named dev server.
 
 Processes continue in the background. Use process output or process logs for a one-off snapshot when you need to inspect status. Do not poll repeatedly just to wait.
 Tool-triggered kills never notify.`,
@@ -71,6 +74,7 @@ Tool-triggered kills never notify.`,
       "Use process output or process logs only for a one-off inspection, explicit user request, or debugging.",
       "Use process restart to replace an existing process — it safely awaits kill before starting the new one.",
       "Do not poll process output/list repeatedly just to wait for a process to finish.",
+      'For output/logs/kill, prefer name="..." when referring to a named dev server.',
     ],
 
     parameters: ProcessesParams,

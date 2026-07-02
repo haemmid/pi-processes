@@ -42,7 +42,7 @@ describe("executeKill", () => {
     const result = await executeKill({ id: "server" }, manager as never);
 
     expect(result.details.success).toBe(false);
-    expect(result.details.message).toContain("Use an exact process ID instead");
+    expect(result.details.message).toContain("Process name is ambiguous");
     expect(result.details.message).toContain("proc_1");
     expect(result.details.message).toContain("proc_2");
   });

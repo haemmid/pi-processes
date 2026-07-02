@@ -1,71 +1,37 @@
 import { configLoader } from "../../config";
-import {
-  type ExecuteResult,
-  LIVE_STATUSES,
-  type ResolveProcessResult,
-} from "../../constants";
+import { type ExecuteResult, LIVE_STATUSES } from "../../constants";
 import type { ProcessManager } from "../../manager";
 import { formatStatus, sanitizeLine } from "../../utils";
+import { resolveSelector } from "./utils";
 
 const MAX_BYTES = 50 * 1024; // 50KB
 
 interface OutputParams {
   id?: string;
-}
-
-function resolveProcessResult(
-  result: ResolveProcessResult,
-  action: "output" | "logs",
-  id: string,
-): ExecuteResult | null {
-  if (result.ok) return null;
-
-  if (result.reason === "ambiguous") {
-    const choices = (result.matches ?? [])
-      .map((match) => `${match.id} ("${sanitizeLine(match.name)}")`)
-      .join(", ");
-    const message =
-      `Process name is ambiguous: ${id}. ` +
-      `Use an exact process ID instead. Matches: ${choices}`;
-    return {
-      content: [{ type: "text", text: message }],
-      details: {
-        action,
-        success: false,
-        message,
-      },
-    };
-  }
-
-  const message = `Process not found: ${id}`;
-  return {
-    content: [{ type: "text", text: message }],
-    details: {
-      action,
-      success: false,
-      message,
-    },
-  };
+  name?: string;
 }
 
 export function executeOutput(
   params: OutputParams,
   manager: ProcessManager,
 ): ExecuteResult {
-  if (!params.id) {
+  const error = resolveSelector(params, manager);
+  if (error) {
+    return { ...error, details: { ...error.details, action: "output" } };
+  }
+
+  const query = params.id || params.name || "";
+  const resolved = manager.resolve(query);
+  if (!resolved.ok) {
+    // Should not reach here, but guard anyway
     return {
-      content: [{ type: "text", text: "Missing required parameter: id" }],
+      content: [{ type: "text", text: `Process not found: "${query}"` }],
       details: {
         action: "output",
         success: false,
-        message: "Missing required parameter: id",
+        message: `Process not found: "${query}"`,
       },
     };
-  }
-
-  const resolved = manager.resolve(params.id);
-  if (!resolved.ok) {
-    return resolveProcessResult(resolved, "output", params.id) as ExecuteResult;
   }
 
   const proc = resolved.info;

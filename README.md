@@ -173,22 +173,25 @@ process start "pnpm dev" name="backend-dev" cwd="/path/to/project"
 process restart "pnpm dev" name="backend-dev"
 process restart "pnpm dev" name="backend-dev" force=true
 process list
-process output id="backend-dev"
+process output id="proc_1"
+process output name="backend-dev"
 process logs id="proc_1"
+process logs name="backend-dev"
 process kill id="backend-dev"
-process kill id="proc_1" force=true
+process kill name="backend-dev" force=true
 process clear
 ```
 
 ### Field rules
 
 - `start`/`restart` require `command` and `name`.
-- `output`, `logs`, and `kill` require `id`.
+- `output`, `logs`, and `kill` accept either `id` (exact process ID) or `name` (process name).
 - `kill` accepts `force=true` to send `SIGKILL` instead of `SIGTERM`.
 - `start` refuses if a process with the same name is already running.
 - `restart` safely kills the existing process (awaited) before starting a new one.
 - `restart` accepts `force=true` to send `SIGKILL` instead of `SIGTERM`.
 - `start`/`restart` accept `cwd` to override the working directory (defaults to session cwd).
+- `output`, `logs`, and `kill` return an error if both `id` and `name` are provided.
 
 ## Killing processes
 

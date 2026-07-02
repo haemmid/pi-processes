@@ -2,6 +2,7 @@ import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 import type { ExecuteResult } from "../../constants";
 import type { ProcessManager } from "../../manager";
 import { formatTimestamp, sanitizeLine } from "../../utils";
+import { buildNextCommands } from "./utils";
 
 interface StartParams {
   name?: string;
@@ -59,7 +60,12 @@ export function executeStart(
     }
 
     const startedAt = formatTimestamp(proc.startTime);
-    const message = `Started "${sanitizeLine(proc.name)}" (${proc.id}, PID: ${proc.pid})\nStarted at: ${startedAt}\nLogs: ${proc.stdoutFile}`;
+    const message = [
+      `Started "${sanitizeLine(proc.name)}" (${proc.id}, PID: ${proc.pid})`,
+      `Started at: ${startedAt}`,
+      `Logs: ${proc.stdoutFile}`,
+      buildNextCommands(proc.name),
+    ].join("\n");
     return {
       content: [{ type: "text", text: message }],
       details: {

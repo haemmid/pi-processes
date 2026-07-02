@@ -1,64 +1,34 @@
 import type { ExecuteResult } from "../../constants";
 import type { ProcessManager } from "../../manager";
 import { sanitizeLine } from "../../utils";
+import { resolveSelector } from "./utils";
 
 interface KillParams {
   id?: string;
+  name?: string;
   force?: boolean;
-}
-
-function notFoundResult(id: string): ExecuteResult {
-  const message = `Process not found: ${id}`;
-  return {
-    content: [{ type: "text", text: message }],
-    details: {
-      action: "kill",
-      success: false,
-      message,
-    },
-  };
-}
-
-function ambiguousResult(
-  id: string,
-  matches: Array<{ id: string; name: string }>,
-): ExecuteResult {
-  const choices = matches
-    .map((match) => `${match.id} ("${sanitizeLine(match.name)}")`)
-    .join(", ");
-  const message =
-    `Process name is ambiguous: ${id}. ` +
-    `Use an exact process ID instead. Matches: ${choices}`;
-  return {
-    content: [{ type: "text", text: message }],
-    details: {
-      action: "kill",
-      success: false,
-      message,
-    },
-  };
 }
 
 export async function executeKill(
   params: KillParams,
   manager: ProcessManager,
 ): Promise<ExecuteResult> {
-  if (!params.id) {
+  const error = resolveSelector(params, manager);
+  if (error) {
+    return { ...error, details: { ...error.details, action: "kill" } };
+  }
+
+  const query = params.id || params.name || "";
+  const resolved = manager.resolve(query);
+  if (!resolved.ok) {
     return {
-      content: [{ type: "text", text: "Missing required parameter: id" }],
+      content: [{ type: "text", text: `Process not found: "${query}"` }],
       details: {
         action: "kill",
         success: false,
-        message: "Missing required parameter: id",
+        message: `Process not found: "${query}"`,
       },
     };
-  }
-
-  const resolved = manager.resolve(params.id);
-  if (!resolved.ok) {
-    return resolved.reason === "ambiguous"
-      ? ambiguousResult(params.id, resolved.matches ?? [])
-      : notFoundResult(params.id);
   }
 
   const proc = resolved.info;

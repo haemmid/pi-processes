@@ -1,52 +1,31 @@
 import type { ExecuteResult } from "../../constants";
 import type { ProcessManager } from "../../manager";
 import { sanitizeLine } from "../../utils";
+import { resolveSelector } from "./utils";
 
 interface LogsParams {
   id?: string;
+  name?: string;
 }
 
 export function executeLogs(
   params: LogsParams,
   manager: ProcessManager,
 ): ExecuteResult {
-  if (!params.id) {
-    return {
-      content: [{ type: "text", text: "Missing required parameter: id" }],
-      details: {
-        action: "logs",
-        success: false,
-        message: "Missing required parameter: id",
-      },
-    };
+  const error = resolveSelector(params, manager);
+  if (error) {
+    return { ...error, details: { ...error.details, action: "logs" } };
   }
 
-  const resolved = manager.resolve(params.id);
+  const query = params.id || params.name || "";
+  const resolved = manager.resolve(query);
   if (!resolved.ok) {
-    if (resolved.reason === "ambiguous") {
-      const choices = (resolved.matches ?? [])
-        .map((match) => `${match.id} ("${sanitizeLine(match.name)}")`)
-        .join(", ");
-      const message =
-        `Process name is ambiguous: ${params.id}. ` +
-        `Use an exact process ID instead. Matches: ${choices}`;
-      return {
-        content: [{ type: "text", text: message }],
-        details: {
-          action: "logs",
-          success: false,
-          message,
-        },
-      };
-    }
-
-    const message = `Process not found: ${params.id}`;
     return {
-      content: [{ type: "text", text: message }],
+      content: [{ type: "text", text: `Process not found: "${query}"` }],
       details: {
         action: "logs",
         success: false,
-        message,
+        message: `Process not found: "${query}"`,
       },
     };
   }
