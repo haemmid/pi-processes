@@ -22,7 +22,7 @@ During UI tests that require processes to be running, either give the user a pro
 - `src/manager.ts` - process manager (spawn, lifecycle, events)
 - `src/config.ts` - config loader
 - `src/constants/` - types and constants
-- `src/tools/` - tool actions (start, restart, list, output, logs, kill, clear)
+- `src/tools/` - tool actions (start, ensure, restart, list, output, logs, kill, clear)
 - `src/tools/actions/utils.ts` - shared resolver for id/name selector
 - `src/hooks/` - event hooks (cleanup, background-blocker)
 - `src/utils/` - helpers (command-executor, process-group, format, ansi)

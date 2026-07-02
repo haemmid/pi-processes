@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning for public releases.
 
+## [0.9.2] - 2026-07-02
+
+### Added
+
+- `ensure` action for idempotent dev-server workflows.
+- `ensure` reuses existing process when name+command+cwd match.
+- `ensure` returns conflict error when name matches but configuration differs.
+- `ensure` returns next commands (output/logs/restart/kill by name).
+
+### Changed
+
+- Version bumped to 0.9.2.
+
 ## [0.9.1] - 2026-07-02
 
 ### Added

@@ -94,7 +94,7 @@ For Astro/Vite dev servers, ask the agent:
 
 ```text
 Use the process tool for the Astro dev server.
-Start `npm run dev -- --host 0.0.0.0` as `my-site:astro`.
+Ensure `npm run dev -- --host 0.0.0.0` is running as `my-site:astro`.
 Use `process output` when you need logs.
 Do not restart after ordinary .astro, .ts, or .css edits.
 Restart only after package/config/env changes or if the server exits.
@@ -104,10 +104,10 @@ Typical tool flow:
 
 ```text
 process list
-process start "npm run dev -- --host 0.0.0.0" name="my-site:astro"
-process output id="my-site:astro"
+process ensure "npm run dev -- --host 0.0.0.0" name="my-site:astro"
+process output name="my-site:astro"
 process restart "npm run dev -- --host 0.0.0.0" name="my-site:astro"
-process kill id="my-site:astro"
+process kill name="my-site:astro"
 ```
 
 ## Demo
@@ -156,7 +156,8 @@ The tool is named `process`.
 
 | Action | Description |
 |--------|-------------|
-| `start` | Start a managed process. |
+| `start` | Start a managed process (refuses if a live process with the same name exists). |
+| `ensure` | Idempotent start: reuse existing process if name+command+cwd match, start new otherwise. |
 | `restart` | Kill existing process and start a new one (safe: await kill → start). |
 | `list` | List managed processes. |
 | `output` | Return a one-off tailed stdout/stderr snapshot. |
@@ -170,6 +171,8 @@ The tool is named `process`.
 process start "pnpm dev" name="backend-dev"
 process start "pnpm test --watch" name="tests"
 process start "pnpm dev" name="backend-dev" cwd="/path/to/project"
+process ensure "pnpm dev" name="backend-dev"
+process ensure "pnpm dev" name="backend-dev" cwd="/path/to/project"
 process restart "pnpm dev" name="backend-dev"
 process restart "pnpm dev" name="backend-dev" force=true
 process list
@@ -184,13 +187,14 @@ process clear
 
 ### Field rules
 
-- `start`/`restart` require `command` and `name`.
+- `start`/`ensure`/`restart` require `command` and `name`.
 - `output`, `logs`, and `kill` accept either `id` (exact process ID) or `name` (process name).
 - `kill` accepts `force=true` to send `SIGKILL` instead of `SIGTERM`.
-- `start` refuses if a process with the same name is already running.
+- `start` refuses if a live process with the same name is already running.
+- `ensure` reuses existing process when name+command+cwd match; returns conflict error otherwise.
 - `restart` safely kills the existing process (awaited) before starting a new one.
 - `restart` accepts `force=true` to send `SIGKILL` instead of `SIGTERM`.
-- `start`/`restart` accept `cwd` to override the working directory (defaults to session cwd).
+- `start`/`ensure`/`restart` accept `cwd` to override the working directory (defaults to session cwd).
 - `output`, `logs`, and `kill` return an error if both `id` and `name` are provided.
 
 ## Killing processes
